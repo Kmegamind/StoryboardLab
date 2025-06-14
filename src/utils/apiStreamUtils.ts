@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { createParser, ParsedEvent, ReconnectInterval } from 'eventsource-parser';
 
 export const callAPIStream = async (
   functionName: string,
@@ -32,30 +33,31 @@ export const callAPIStream = async (
 
     const decoder = new TextDecoder();
     
+    const parser = createParser((event: ParsedEvent | ReconnectInterval) => {
+      if (event.type === 'event') {
+        if (event.data === '[DONE]') {
+          return;
+        }
+        try {
+          const parsed = JSON.parse(event.data);
+          const content = parsed.choices[0]?.delta?.content;
+          if (content) {
+            onChunk(content);
+          }
+        } catch (e) {
+          console.error('Error parsing SSE event data:', e, 'Data:', event.data);
+        }
+      }
+    });
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         const chunkString = decoder.decode(value);
-        const lines = chunkString.split('\n').filter(line => line.trim().startsWith('data:'));
-
-        for (const line of lines) {
-            const jsonString = line.replace(/^data: /, '');
-            if (jsonString.trim() === '[DONE]') {
-                break;
-            }
-            try {
-                const parsed = JSON.parse(jsonString);
-                const content = parsed.choices[0]?.delta?.content;
-                if (content) {
-                    onChunk(content);
-                }
-            } catch (e) {
-                // Ignore parsing errors for incomplete chunks
-            }
-        }
+        parser.feed(chunkString);
     }
+    
     onComplete();
   } catch (error) {
     console.error(`Error in callAPIStream for ${functionName}:`, error);
