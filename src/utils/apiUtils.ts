@@ -1,12 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from "@/components/ui/use-toast"; // Corrected import path
+import { toast } from "@/components/ui/use-toast";
 
 export const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string): Promise<string | null> => {
   try {
-    console.log("Invoking deepseek-proxy function with:", { systemPrompt, userPrompt });
+    console.log("Invoking deepseek-proxy function with: stream: false");
     const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
-      body: { systemPrompt, userPrompt },
+      body: { systemPrompt, userPrompt, stream: false },
     });
 
     if (error) {
@@ -34,7 +34,7 @@ export const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string):
     } else {
       toast({
         title: "Edge Function 响应格式错误",
-        description: "未能从 Edge Function 获取有效回复。",
+        description: "未能从 Edge Function 获取有效回复。请检查 Edge Function 日志了解详情。",
         variant: "destructive",
       });
       return null;
