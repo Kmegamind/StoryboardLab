@@ -1,21 +1,17 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts"; // Recommended for Deno Deploy, using URL import
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'; // Ensure using a recent, stable version
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 
-// Define CORS headers. '*' is generally fine for development,
-// but for production, you might want to restrict it to your app's domain.
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*', // Or your specific domain like 'https://your-app.com'
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS', // Specify allowed methods
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -30,11 +26,10 @@ serve(async (req: Request) => {
       });
     }
 
-    // Ensure the request is POST
     if (req.method !== 'POST') {
       console.warn('Received non-POST request:', req.method);
       return new Response(JSON.stringify({ error: 'Only POST requests are accepted.' }), {
-        status: 405, // Method Not Allowed
+        status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -49,12 +44,12 @@ serve(async (req: Request) => {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-chat', // Or your preferred model
+        model: 'deepseek-chat',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        stream: true, // Enable streaming
+        stream: true,
       }),
     });
 
@@ -69,9 +64,37 @@ serve(async (req: Request) => {
       });
     }
     
-    console.log('Piping stream from DeepSeek API.');
-    // Pipe the streaming response
-    return new Response(deepSeekResponse.body, {
+    // Create a new ReadableStream for more robust piping.
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = deepSeekResponse.body?.getReader();
+        if (!reader) {
+            console.error("Failed to get reader from DeepSeek response body.");
+            controller.close();
+            return;
+        }
+
+        try {
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                controller.enqueue(value);
+            }
+        } catch (error) {
+            console.error('Error while reading from DeepSeek stream:', error);
+            controller.error(error);
+        } finally {
+            controller.close();
+            reader.releaseLock();
+        }
+      },
+    });
+
+    console.log('Piping stream from DeepSeek API using robust method.');
+    return new Response(stream, {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'text/event-stream; charset=utf-8',
