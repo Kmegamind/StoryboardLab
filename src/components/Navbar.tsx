@@ -14,11 +14,12 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Updated mainNavLinks to remove the specified items
   const mainNavLinks = [
-    { href: '/#overview', label: '产品概述', isRouterLink: false },
-    { href: '/#features', label: '核心功能', isRouterLink: false },
-    { href: '/#technology', label: '技术亮点', isRouterLink: false },
-    { href: '/#contact', label: '联系我们', isRouterLink: false },
+    // { href: '/#overview', label: '产品概述', isRouterLink: false },
+    // { href: '/#features', label: '核心功能', isRouterLink: false },
+    // { href: '/#technology', label: '技术亮点', isRouterLink: false },
+    // { href: '/#contact', label: '联系我们', isRouterLink: false },
   ];
 
   const agentNavLinks = [
@@ -48,6 +49,10 @@ const Navbar = () => {
         </Link>
       );
     }
+    // Only render if href is defined, which it won't be for the removed items if array is empty.
+    // If mainNavLinks becomes empty, this component won't be called for those items.
+    // For safety, we can add a check here.
+    if (!href) return null;
     return (
       <a
         href={href}
@@ -68,7 +73,8 @@ const Navbar = () => {
             <span>CinemaAI Studio</span>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
-            {mainNavLinks.map((link) => (
+            {/* Render mainNavLinks only if it's not empty */}
+            {mainNavLinks.length > 0 && mainNavLinks.map((link) => (
               <NavLinkItem key={link.label} href={link.href} label={link.label} isRouterLink={link.isRouterLink} />
             ))}
             {/* Agent Links Dropdown */}
@@ -103,7 +109,8 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-md pb-4">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col space-y-4">
-            {mainNavLinks.map((link) => (
+            {/* Render mainNavLinks in mobile only if it's not empty */}
+            {mainNavLinks.length > 0 && mainNavLinks.map((link) => (
               <NavLinkItem key={link.label} href={link.href} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={link.isRouterLink} />
             ))}
             {/* Agent Links in Mobile Menu */}
