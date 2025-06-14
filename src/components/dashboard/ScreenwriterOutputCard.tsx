@@ -11,6 +11,7 @@ interface ScreenwriterOutputCardProps {
   onDirectorProcessing: () => void;
   isLoadingScreenwriter: boolean;
   isLoadingDirector: boolean;
+  disabled?: boolean;
 }
 
 const ScreenwriterOutputCard: React.FC<ScreenwriterOutputCardProps> = ({
@@ -19,6 +20,7 @@ const ScreenwriterOutputCard: React.FC<ScreenwriterOutputCardProps> = ({
   onDirectorProcessing,
   isLoadingScreenwriter,
   isLoadingDirector,
+  disabled = false,
 }) => {
   return (
     <Card>
@@ -40,11 +42,12 @@ const ScreenwriterOutputCard: React.FC<ScreenwriterOutputCardProps> = ({
               value={screenwriterOutput}
               onChange={(e) => setScreenwriterOutput(e.target.value)}
               className="min-h-[100px] bg-muted/30"
+              disabled={disabled}
             />
             <Button
               onClick={onDirectorProcessing}
               className="mt-4 w-full"
-              disabled={isLoadingDirector || !screenwriterOutput}
+              disabled={disabled || isLoadingDirector || !screenwriterOutput}
             >
               {isLoadingDirector ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -3,32 +3,30 @@ import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, ArrowRight, Save } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 
 interface DirectorOutputCardProps {
   directorOutput: string;
   setDirectorOutput: (output: string) => void;
   onSaveShotsToDatabase: () => void;
-  onGenerateFinalPrompts: () => void;
   isLoadingDirector: boolean;
   isSavingShots: boolean;
-  isLoadingFinalPrompts: boolean;
+  disabled?: boolean;
 }
 
 const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
   directorOutput,
   setDirectorOutput,
   onSaveShotsToDatabase,
-  onGenerateFinalPrompts,
   isLoadingDirector,
   isSavingShots,
-  isLoadingFinalPrompts,
+  disabled = false,
 }) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>3. 导演 Agent 处理 (结构化分镜)</CardTitle>
-        <CardDescription>AI将把剧本分解为结构化的分镜列表（已建议输出为JSON格式）。</CardDescription>
+        <CardDescription>AI将把剧本分解为结构化的分镜列表（JSON格式），处理完成后可保存。</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoadingDirector && !directorOutput && (
@@ -43,13 +41,14 @@ const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
             <Textarea
               value={directorOutput}
               onChange={(e) => setDirectorOutput(e.target.value)}
-              className="min-h-[150px] bg-muted/30"
+              className="min-h-[150px] bg-muted/30 font-mono text-sm"
               placeholder="导演 Agent 将在此处输出JSON格式的结构化分镜列表..."
+              disabled={disabled}
             />
             <Button
               onClick={onSaveShotsToDatabase}
               className="mt-4 w-full"
-              disabled={isSavingShots || !directorOutput}
+              disabled={disabled || isSavingShots || !directorOutput}
             >
               {isSavingShots ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -57,19 +56,6 @@ const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
                 <Save className="mr-2 h-4 w-4" />
               )}
               保存分镜到数据库
-            </Button>
-            <Button
-              onClick={onGenerateFinalPrompts}
-              className="mt-2 w-full"
-              disabled={isLoadingFinalPrompts || !directorOutput} // Logic might change based on future features
-              variant="outline"
-            >
-              {isLoadingFinalPrompts ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowRight className="mr-2 h-4 w-4" />
-              )}
-              (后续功能) 生成选中分镜的图像提示词
             </Button>
           </>
         ) : (

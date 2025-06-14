@@ -10,6 +10,7 @@ interface PlotInputCardProps {
   setPlot: (plot: string) => void;
   onProcessPlot: () => void;
   isLoadingScreenwriter: boolean;
+  disabled?: boolean;
 }
 
 const PlotInputCard: React.FC<PlotInputCardProps> = ({
@@ -17,6 +18,7 @@ const PlotInputCard: React.FC<PlotInputCardProps> = ({
   setPlot,
   onProcessPlot,
   isLoadingScreenwriter,
+  disabled = false,
 }) => {
   return (
     <Card className="md:col-span-1">
@@ -30,11 +32,12 @@ const PlotInputCard: React.FC<PlotInputCardProps> = ({
           value={plot}
           onChange={(e) => setPlot(e.target.value)}
           className="min-h-[200px] text-base"
+          disabled={disabled}
         />
         <Button
           onClick={onProcessPlot}
           className="mt-4 w-full"
-          disabled={!plot || isLoadingScreenwriter}
+          disabled={disabled || !plot || isLoadingScreenwriter}
         >
           {isLoadingScreenwriter ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

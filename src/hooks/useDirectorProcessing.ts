@@ -8,18 +8,20 @@ import { Tables } from '@/integrations/supabase/types';
 type Shot = Tables<'structured_shots'>;
 
 export interface DirectorProcessingHookProps {
-  onSaveComplete?: () => void; 
+  onSaveComplete?: () => void;
 }
 
 export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
-  const [directorOutput, setDirectorOutput] = useState<string>('');
   const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
   const [isSavingShots, setIsSavingShots] = useState<boolean>(false);
 
-  const processWithDirectorAgent = async (currentScreenwriterOutput: string) => {
+  const processWithDirectorAgent = async (
+    currentScreenwriterOutput: string,
+    onChunk: (chunk: string) => void,
+    onStreamComplete?: () => void,
+  ) => {
     if (!currentScreenwriterOutput) return;
     setIsLoadingDirector(true);
-    setDirectorOutput(''); // Clear previous output
 
     const systemPromptDirector = `你是一位经验丰富的电影导演。你的任务是将剧本分解为一系列具体的镜头，并以JSON数组的格式输出。
 
@@ -36,16 +38,11 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 - "director_notes" (导演注释)
 
 请确保你的输出是一个结构良好、完整的JSON数组字符串。如果剧本无法分镜，请返回 {"error": "无法处理该剧本进行分镜。"}`;
-    
-    let accumulatedOutput = "";
 
     await callAPIStream(
       'deepseek-proxy',
       { systemPrompt: systemPromptDirector, userPrompt: currentScreenwriterOutput },
-      (chunk) => {
-        accumulatedOutput += chunk;
-        setDirectorOutput(prev => prev + chunk);
-      },
+      onChunk,
       (error) => {
         toast({ title: "导演 Agent 处理失败", description: error.message, variant: "destructive" });
         setIsLoadingDirector(false);
@@ -56,27 +53,14 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
           title: "导演 Agent 处理完成",
           description: "已成功生成结构化分镜。",
         });
-        
-        // Final validation of the output
-        try {
-            const trimmed = accumulatedOutput.trim();
-            if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) {
-                throw new Error("输出不是一个有效的 JSON 数组。");
-            }
-            JSON.parse(trimmed);
-        } catch(e) {
-            toast({
-                title: "警告：输出内容格式有误",
-                description: "生成的内容似乎不是有效的JSON数组格式。请在保存前检查并修正。",
-                variant: "destructive",
-                duration: 9000,
-            })
+        if (onStreamComplete) {
+          onStreamComplete();
         }
       }
     );
   };
 
-  const saveShotsToDatabase = async (currentDirectorOutput: string) => {
+  const saveShotsToDatabase = async (currentDirectorOutput: string, projectId: string) => {
     if (!currentDirectorOutput) {
       toast({ title: "没有可保存的分镜", description: "导演输出为空。", variant: "destructive"});
       return;
@@ -107,6 +91,7 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
       }
       const shotsToInsert = shots.map(shot => ({
         user_id: user.id,
+        project_id: projectId,
         shot_number: String(shot.shot_number || ''),
         shot_type: String(shot.shot_type || ''),
         scene_content: String(shot.scene_content || '无内容'),
@@ -133,8 +118,6 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
   };
 
   return {
-    directorOutput,
-    setDirectorOutput,
     isLoadingDirector,
     isSavingShots,
     processWithDirectorAgent,

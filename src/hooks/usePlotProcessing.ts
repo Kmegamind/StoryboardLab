@@ -3,38 +3,38 @@ import { useState } from 'react';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
 import { toast } from "@/components/ui/use-toast";
 
-export interface PlotProcessingHookProps {
-  initialPlot?: string;
-}
-
-export const usePlotProcessing = (props?: PlotProcessingHookProps) => {
-  const [plot, setPlot] = useState<string>(props?.initialPlot || '');
-  const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
+export const usePlotProcessing = () => {
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
 
-  const processPlotWithScreenwriter = async (currentPlot: string) => {
-    if (!currentPlot) return;
-    setIsLoadingScreenwriter(true);
-    setScreenwriterOutput(''); // Clear previous output
-
-    const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
-    const result = await callDeepSeekAPI(systemPromptScreenwriter, currentPlot);
-
-    if (result) {
-      setScreenwriterOutput(result);
-      toast({
-        title: "编剧 Agent 处理完成",
-        description: "已成功生成初步剧本内容。",
-      });
+  const processPlotWithScreenwriter = async (currentPlot: string): Promise<string | null> => {
+    if (!currentPlot) {
+      toast({ title: "请输入情节内容", variant: "destructive" });
+      return null;
     }
-    setIsLoadingScreenwriter(false);
+    setIsLoadingScreenwriter(true);
+    try {
+      const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
+      const result = await callDeepSeekAPI(systemPromptScreenwriter, currentPlot);
+
+      if (result) {
+        toast({
+          title: "编剧 Agent 处理完成",
+          description: "已成功生成初步剧本内容。",
+        });
+        return result;
+      } else {
+        toast({ title: "编剧 Agent 未能生成内容", description: "请检查网络或稍后重试。", variant: "destructive" });
+        return null;
+      }
+    } catch (error: any) {
+      toast({ title: "编剧 Agent 处理异常", description: error.message, variant: "destructive" });
+      return null;
+    } finally {
+      setIsLoadingScreenwriter(false);
+    }
   };
 
   return {
-    plot,
-    setPlot,
-    screenwriterOutput,
-    setScreenwriterOutput,
     isLoadingScreenwriter,
     processPlotWithScreenwriter,
   };
