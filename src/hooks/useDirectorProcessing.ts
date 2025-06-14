@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -38,7 +39,7 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 请确保你的输出是一个结构良好、完整的JSON数组字符串。如果剧本无法分镜，请返回 {"error": "无法处理该剧本进行分镜。"}`;
 
     try {
-      const { data: stream, error } = await supabase.functions.invoke('deepseek-proxy', {
+      const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
         body: { 
           systemPrompt: systemPromptDirector, 
           userPrompt: currentScreenwriterOutput,
@@ -47,8 +48,10 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
       });
 
       if (error) throw error;
-      if (!stream) throw new Error("未能获取流式响应。");
+      if (!data) throw new Error("未能获取流式响应。");
 
+      // The data from invoke for a stream is a Blob. We need to get its underlying ReadableStream.
+      const stream = (data as Blob).stream();
       const reader = stream.getReader();
       const decoder = new TextDecoder();
       let done = false;
