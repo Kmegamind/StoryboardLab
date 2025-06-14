@@ -9,15 +9,16 @@ import { supabase } from '@/integrations/supabase/client';
 const DashboardPage = () => {
   const [plot, setPlot] = useState<string>('');
   const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
-  const [directorOutput, setDirectorOutput] = useState<string>('');
-  const [finalPrompts, setFinalPrompts] = useState<string>('');
+  const [directorOutput, setDirectorOutput] = useState<string>(''); // This will hold the structured JSON string or Markdown
+  const [finalPrompts, setFinalPrompts] = useState<string>(''); // Kept for now, but its generation is disabled
 
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
   const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
-  const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
-  const [isSavingShots, setIsSavingShots] = useState<boolean>(false);
+  const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false); // Kept for now
+  const [isSavingShots, setIsSavingShots] = useState<boolean>(false); // New state for saving shots
 
   const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string) => {
+    // ... keep existing code (callDeepSeekAPI function)
     try {
       console.log("Invoking deepseek-proxy function with:", { systemPrompt, userPrompt });
       const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
@@ -69,8 +70,8 @@ const DashboardPage = () => {
     if (!plot) return;
     setIsLoadingScreenwriter(true);
     setScreenwriterOutput('');
-    setDirectorOutput('');
-    setFinalPrompts('');
+    setDirectorOutput(''); // Clear subsequent steps
+    setFinalPrompts('');  // Clear subsequent steps
 
     const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
@@ -89,7 +90,7 @@ const DashboardPage = () => {
     if (!screenwriterOutput) return;
     setIsLoadingDirector(true);
     setDirectorOutput('');
-    setFinalPrompts('');
+    setFinalPrompts(''); // Clear subsequent steps
 
     const systemPromptDirector = "你是一位经验丰富的电影导演和AI提示词工程师。你将收到一份由编剧撰写的初步剧本。你的任务是：\n1.  仔细阅读和理解剧本内容。\n2.  将剧本详细分解为一系列具体的镜头。\n3.  对于每一个镜头，请以清晰、结构化的方式提供以下信息。**强烈建议为每个镜头生成一个JSON对象，并将所有镜头的JSON对象组织在一个JSON数组中。如果无法输出JSON数组，请使用Markdown表格，确保每一行代表一个镜头，并且列的顺序和名称严格如下：**\n    *   `shot_number` (镜号): (例如：1, 2, 3A, 3B...)\n    *   `shot_type` (景别): (例如：全景, 中景, 近景, 特写, 大特写, 远景)\n    *   `scene_content` (画面内容): (详细描述画面中看到的内容，包括环境、角色、角色动作与表情、光线氛围等)\n    *   `dialogue` (台词): (如果该镜头有台词，请注明说话人；如无，则留空或注明“无”)\n    *   `estimated_duration` (预估时长): (例如：3秒, 5-7秒)\n    *   `camera_movement` (运镜方式): (例如：固定镜头, 推镜头, 拉镜头, 摇镜头, 跟随镜头, 升降镜头, 旋转镜头, 主观镜头；如无特定要求，可留空)\n    *   `sound_music` (音效/音乐): (关键的声音元素，环境音，或背景音乐的风格和情绪描述)\n    *   `visual_style` (画面风格参考): (例如：电影《银翼杀手》的霓虹赛博朋克风格, 宫崎骏动画的明亮温暖童话风格, 黑白胶片质感的悬疑风格)\n    *   `key_props` (关键道具): (镜头中出现的对情节或视觉重要的道具)\n    *   `director_notes` (情绪识别点/导演注释): (例如：角色A惊讶, 整体氛围紧张, 此处特写角色B的眼神以表达其内心挣扎)\n\n请确保输出的结构化信息完整、具体，方便后续进行数据库存储和AI图像生成。\n例如，JSON数组的格式应为：\n```json\n[\n  {\n    \"shot_number\": \"1\",\n    \"shot_type\": \"全景\",\n    \"scene_content\": \"夜晚的赛博朋克都市，霓虹灯闪烁，雨水湿润街道，一艘飞行车载着主角低空掠过。\",\n    \"dialogue\": \"无\",\n    \"estimated_duration\": \"5秒\",\n    \"camera_movement\": \"跟随镜头\",\n    \"sound_music\": \"电子合成器音乐，雨声，飞行器引擎声\",\n    \"visual_style\": \"《银翼杀手2049》风格，冷色调，高对比度\",\n    \"key_props\": \"飞行车, 全息广告牌\",\n    \"director_notes\": \"营造神秘和广阔的都市氛围，主角显得渺小。\"\n  },\n  {\n    \"shot_number\": \"2\"\n    // ... more fields ...\n  }\n]\n```";
     const result = await callDeepSeekAPI(systemPromptDirector, screenwriterOutput);
@@ -103,6 +104,15 @@ const DashboardPage = () => {
     }
     setIsLoadingDirector(false);
   };
+  
+  const handleGenerateFinalPrompts = async () => {
+    // This function is now effectively disabled and will be repurposed later
+    toast({
+        title: "功能调整中",
+        description: "此功能将调整为针对数据库中选定的单个分镜生成提示词。",
+        variant: "default"
+    });
+  };
 
   const handleSaveShotsToDatabase = async () => {
     if (!directorOutput) {
@@ -112,18 +122,17 @@ const DashboardPage = () => {
     setIsSavingShots(true);
     console.log("Attempting to save shots. Raw director output:", directorOutput);
     // TODO: Implement parsing of directorOutput (JSON string or Markdown) into an array of shot objects.
-    // TODO: Get user_id from Supabase auth: const { data: { user } } = await supabase.auth.getUser(); if (!user) {toast error, return}
+    // TODO: Get user_id from Supabase auth: const { data: { user } } = await supabase.auth.getUser(); if (!user) {toast error and return} Make sure auth is implemented in the app.
     // TODO: Map parsed shots to the structure required by 'structured_shots' table, including user_id.
     // TODO: const { error } = await supabase.from('structured_shots').insert(parsedShotsWithUserId);
     // TODO: Handle success/error with toasts.
 
-    // Placeholder logic:
     toast({
       title: "保存功能待实现",
-      description: "正在开发将结构化分镜保存到数据库的功能。当前输出已在控制台打印。",
+      description: "正在开发将结构化分镜保存到数据库的功能。当前输出已在控制台打印。请确保应用已集成用户认证。",
     });
     console.log("Simulating save for director output: ", directorOutput);
-    // For now, we'll just simulate a delay and then stop loading
+    
     setTimeout(() => {
       setIsSavingShots(false);
     }, 2000);
@@ -224,12 +233,12 @@ const DashboardPage = () => {
                   <Textarea 
                     value={directorOutput} 
                     onChange={(e) => setDirectorOutput(e.target.value)}
-                    className="min-h-[150px] bg-muted/30" 
+                    className="min-h-[150px] bg-muted/30"
                   />
                   <Button 
                     onClick={handleSaveShotsToDatabase} 
                     className="mt-4 w-full"
-                    disabled={isSavingShots || !directorOutput} 
+                    disabled={isSavingShots || !directorOutput}
                   >
                      {isSavingShots ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -241,10 +250,10 @@ const DashboardPage = () => {
                   <Button 
                     onClick={handleGenerateFinalPrompts} 
                     className="mt-2 w-full"
-                    disabled={true}
+                    disabled={true} // Button is disabled
                     variant="outline"
                   >
-                     {isLoadingFinalPrompts ? (
+                     {isLoadingFinalPrompts ? ( // Kept loader for consistency if re-enabled
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <ArrowRight className="mr-2 h-4 w-4" />
@@ -268,7 +277,7 @@ const DashboardPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {finalPrompts && (
+          {finalPrompts && ( // Display old finalPrompts if they exist, but generation is disabled
              <Textarea 
               value={finalPrompts} 
               onChange={(e) => setFinalPrompts(e.target.value)}
@@ -276,7 +285,7 @@ const DashboardPage = () => {
               placeholder="旧版全局提示词输出区域（此功能已调整）"
             />
           )}
-          {!finalPrompts && !isLoadingFinalPrompts && (
+          {!finalPrompts && !isLoadingFinalPrompts && ( // Updated placeholder text
             <p className="text-muted-foreground">等待导演 Agent 完成结构化分镜处理，并保存到数据库后，可在此处进行后续操作...</p>
           )}
         </CardContent>
