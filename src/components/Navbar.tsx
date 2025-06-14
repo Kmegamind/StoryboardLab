@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Film, Menu, X, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link for internal navigation
@@ -27,6 +26,13 @@ const Navbar = () => {
     { to: '/agents/director', label: '导演 Agent' },
     { to: '/agents/cinematographer', label: '摄像 Agent' },
     { to: '/agents/art-director', label: '美术指导 Agent' },
+  ];
+
+  const debugAgentNavLinks = [
+    { to: '/agents/screenwriter', label: '调试编剧 Agent' },
+    { to: '/agents/director', label: '调试导演 Agent' },
+    { to: '/agents/cinematographer', label: '调试摄像 Agent' },
+    { to: '/agents/art-director', label: '调试美术指导 Agent' },
   ];
 
   useEffect(() => {
@@ -94,6 +100,23 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            {/* Agent Debug Links Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
+                  调试 Agents <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
+                {debugAgentNavLinks.map((link) => (
+                  <DropdownMenuItem key={link.to} asChild className="hover:bg-muted/50 cursor-pointer">
+                    <Link to={link.to} className="w-full text-foreground hover:text-primary">
+                      {link.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="md:hidden">
             <button
@@ -116,6 +139,11 @@ const Navbar = () => {
             {/* Agent Links in Mobile Menu */}
             <p className="text-muted-foreground px-2 pt-2 text-sm">Agents:</p>
             {agentNavLinks.map((link) => (
+               <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
+            ))}
+            {/* Agent Debug Links in Mobile Menu */}
+            <p className="text-muted-foreground px-2 pt-2 text-sm">调试 Agents:</p>
+            {debugAgentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
           </div>
