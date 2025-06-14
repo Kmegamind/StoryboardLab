@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -28,8 +27,10 @@ export const useProject = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                // If not logged in, do nothing. UI should handle this.
-                setIsLoading(false);
+                // If not logged in, ProtectedRoute will handle redirection.
+                // We return here without setting isLoading to false to prevent
+                // flashing an error message on the dashboard. The component
+                // will remain in a loading state until it's unmounted.
                 return;
             }
 
