@@ -1,17 +1,16 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
+// Navbar and Footer are now handled by AppLayout
 import Hero from '@/components/Hero';
 import Overview from '@/components/Overview';
 import Features from '@/components/Features';
 import Technology from '@/components/Technology';
 import Contact from '@/components/Contact';
-import Footer from '@/components/Footer';
 
 const Index = () => {
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <Navbar />
+    <>
+      {/* Navbar is removed from here, handled by AppLayout */}
       <main>
         <Hero />
         <Overview />
@@ -19,8 +18,8 @@ const Index = () => {
         <Technology />
         <Contact />
       </main>
-      <Footer />
-    </div>
+      {/* Footer is removed from here, handled by AppLayout */}
+    </>
   );
 };
 
