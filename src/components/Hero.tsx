@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button'; // Assuming shadcn/ui Button is available
+import { Button } from '@/components/ui/button'; 
 import { PlayCircle } from 'lucide-react';
 
 const Hero = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Gradient Animation */}
+      {/* Background Gradient Animation - This was removed to fix a build error. Can be re-added with standard CSS/Tailwind. */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 animate-gradient-xy"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -36,21 +36,6 @@ const Hero = () => {
           如果您有手册中提到的 `cinemaai-banner.png` 图片，请上传它，我可以将其设置为更具吸引力的背景。
         </p>
       </div>
-      <style jsx global>{`
-        @keyframes gradient-xy {
-          0%, 100% {
-            background-size: 400% 400%;
-            background-position: left center;
-          }
-          50% {
-            background-size: 200% 200%;
-            background-position: right center;
-          }
-        }
-        .animate-gradient-xy {
-          animation: gradient-xy 15s ease infinite;
-        }
-      `}</style>
     </section>
   );
 };
