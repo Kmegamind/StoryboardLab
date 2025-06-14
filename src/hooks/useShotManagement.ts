@@ -1,6 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from "@/components/ui/use-toast"; // Corrected import path
+import { toast } from "@/components/ui/use-toast";
 import { Tables } from '@/integrations/supabase/types';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
 
@@ -17,7 +18,7 @@ export const useShotManagement = () => {
   const [artDirectorPlan, setArtDirectorPlan] = useState<string | null>(null);
   const [isLoadingArtDirector, setIsLoadingArtDirector] = useState<boolean>(false);
 
-  const fetchSavedShots = useCallback(async () => {
+  const fetchSavedShots = useCallback(async (projectId: string) => {
     setIsLoadingSavedShots(true);
     setSavedShots([]);
     setSelectedShot(null); // Reset selected shot when refetching
@@ -33,8 +34,8 @@ export const useShotManagement = () => {
       const { data, error } = await supabase
         .from('structured_shots')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('project_id', projectId) // Fetch shots for the specific project
+        .order('created_at', { ascending: true }); // Order by creation time
       if (error) {
         toast({ title: "加载分镜失败", description: `数据库错误: ${error.message}`, variant: "destructive"});
         setSavedShots([]);

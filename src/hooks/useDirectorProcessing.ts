@@ -91,7 +91,7 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
       }
       const shotsToInsert = shots.map(shot => ({
         user_id: user.id,
-        project_id: projectId,
+        project_id: projectId, // Associate with project ID
         shot_number: String(shot.shot_number || ''),
         shot_type: String(shot.shot_type || ''),
         scene_content: String(shot.scene_content || '无内容'),

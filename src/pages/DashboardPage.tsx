@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import PlotInputCard from '@/components/dashboard/PlotInputCard';
 import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
@@ -39,8 +39,15 @@ const DashboardPage = () => {
   } = useShotManagement();
 
   const { isLoadingScreenwriter, processPlotWithScreenwriter } = usePlotProcessing();
+  
+  const handleFetchSavedShots = useCallback(() => {
+      if (project) {
+        fetchSavedShots(project.id);
+      }
+  }, [project, fetchSavedShots]);
+  
   const { isLoadingDirector, isSavingShots, processWithDirectorAgent, saveShotsToDatabase } = useDirectorProcessing({
-    onSaveComplete: fetchSavedShots,
+    onSaveComplete: handleFetchSavedShots,
   });
 
   useEffect(() => {
@@ -48,19 +55,18 @@ const DashboardPage = () => {
       setPlot(project.plot || '');
       setScreenwriterOutput(project.screenwriter_output || '');
       setDirectorOutput(project.director_output_json || '');
+      if(project.status === 'completed' || project.director_output_json) {
+        handleFetchSavedShots();
+      }
     }
-  }, [project]);
-
-  useEffect(() => {
-    fetchSavedShots();
-  }, [fetchSavedShots]);
+  }, [project, handleFetchSavedShots]);
 
   const handleProcessPlot = async () => {
     if (!project) return;
     setScreenwriterOutput('');
     setDirectorOutput('');
     clearSelectedShotAndPrompts();
-    await updateProject({ plot, screenwriter_output: null, director_output_json: null });
+    await updateProject({ plot, screenwriter_output: null, director_output_json: null, status: 'new' });
     const result = await processPlotWithScreenwriter(plot);
     if (result) {
       setScreenwriterOutput(result);
@@ -84,18 +90,30 @@ const DashboardPage = () => {
       async () => { // onStreamComplete
         try {
           const trimmed = accumulatedOutput.trim();
+          // Basic validation to ensure it's likely a JSON array
           if (trimmed && (!trimmed.startsWith('[') || !trimmed.endsWith(']'))) {
-            throw new Error("输出不是有效的JSON数组。");
+             // Attempt to find JSON array within markdown ```json ... ```
+            const match = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
+            if (match && match[1]) {
+              const extractedJson = match[1].trim();
+              JSON.parse(extractedJson); // Validate extracted JSON
+              accumulatedOutput = extractedJson;
+            } else {
+              throw new Error("输出不是有效的JSON数组，且未在Markdown代码块中找到。");
+            }
+          } else if (trimmed) {
+             JSON.parse(trimmed); // Validate
           }
-          if(trimmed) JSON.parse(trimmed);
+          
           await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
         } catch (e: any) {
           toast({
-            title: "警告：输出内容格式有误",
-            description: e.message || "请在保存前检查并修正。",
+            title: "警告：导演 Agent 输出内容格式有误",
+            description: "AI输出的可能不是标准JSON格式。已尝试修正，但请在保存前仔细检查并手动编辑。",
             variant: "destructive",
             duration: 9000,
           });
+          // Still save the raw output for manual correction
           await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
         }
       }
@@ -126,6 +144,8 @@ const DashboardPage = () => {
       );
   }
 
+  const isProcessing = isLoadingScreenwriter || isLoadingDirector || isSavingShots;
+
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <header className="mb-12 text-center">
@@ -141,7 +161,7 @@ const DashboardPage = () => {
           setPlot={setPlot}
           onProcessPlot={handleProcessPlot}
           isLoadingScreenwriter={isLoadingScreenwriter}
-          disabled={isLoadingScreenwriter || isLoadingDirector}
+          disabled={isProcessing}
         />
 
         <div className="md:col-span-2 space-y-8">
@@ -151,7 +171,7 @@ const DashboardPage = () => {
             onDirectorProcessing={handleDirectorProcessing}
             isLoadingScreenwriter={isLoadingScreenwriter}
             isLoadingDirector={isLoadingDirector}
-            disabled={!screenwriterOutput || isLoadingScreenwriter || isLoadingDirector}
+            disabled={!screenwriterOutput || isProcessing}
           />
           <DirectorOutputCard
             directorOutput={directorOutput}
@@ -159,7 +179,7 @@ const DashboardPage = () => {
             onSaveShotsToDatabase={handleSaveShots}
             isLoadingDirector={isLoadingDirector}
             isSavingShots={isSavingShots}
-            disabled={!directorOutput || isLoadingDirector || isSavingShots}
+            disabled={!directorOutput || isProcessing}
           />
         </div>
       </div>

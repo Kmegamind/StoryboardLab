@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      projects: {
+        Row: {
+          created_at: string
+          director_output_json: string | null
+          id: string
+          plot: string | null
+          screenwriter_output: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          director_output_json?: string | null
+          id?: string
+          plot?: string | null
+          screenwriter_output?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          director_output_json?: string | null
+          id?: string
+          plot?: string | null
+          screenwriter_output?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       structured_shots: {
         Row: {
           camera_movement: string | null
@@ -18,6 +54,7 @@ export type Database = {
           estimated_duration: string | null
           id: string
           key_props: string | null
+          project_id: string | null
           scene_content: string
           shot_number: string | null
           shot_type: string | null
@@ -34,6 +71,7 @@ export type Database = {
           estimated_duration?: string | null
           id?: string
           key_props?: string | null
+          project_id?: string | null
           scene_content: string
           shot_number?: string | null
           shot_type?: string | null
@@ -50,6 +88,7 @@ export type Database = {
           estimated_duration?: string | null
           id?: string
           key_props?: string | null
+          project_id?: string | null
           scene_content?: string
           shot_number?: string | null
           shot_type?: string | null
@@ -58,7 +97,15 @@ export type Database = {
           user_id?: string | null
           visual_style?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
