@@ -1,29 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import PlotInputCard from '@/components/dashboard/PlotInputCard';
 import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
 import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
-// Types for structured_shots might be needed if we parse/display them here, or in a dedicated component.
-// For now, directorOutput is still a string.
-// import { Tables } from '@/integrations/supabase/types'; // Assuming types.ts is updated for structured_shots
+import { Tables } from '@/integrations/supabase/types';
 
-// type Shot = Tables<'structured_shots'>; // Example if we were to use typed shots
+type Shot = Tables<'structured_shots'>;
 
 const DashboardPage = () => {
   const [plot, setPlot] = useState<string>('');
   const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
   const [directorOutput, setDirectorOutput] = useState<string>('');
-  const [finalPrompts, setFinalPrompts] = useState<string>('');
+  // finalPrompts is no longer used by FutureAreaCard in this new implementation
+  // const [finalPrompts, setFinalPrompts] = useState<string>(''); 
 
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
   const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
-  const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
+  // isLoadingFinalPrompts is no longer directly used by FutureAreaCard for its primary display
+  // const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
   const [isSavingShots, setIsSavingShots] = useState<boolean>(false);
 
+  const [savedShots, setSavedShots] = useState<Shot[]>([]);
+  const [isLoadingSavedShots, setIsLoadingSavedShots] = useState<boolean>(false);
+
+  const fetchSavedShots = async () => {
+    setIsLoadingSavedShots(true);
+    setSavedShots([]); // Clear previous shots
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // toast({ title: "提示", description: "请先登录以查看已保存的分镜。", variant: "default"});
+        // Not showing toast here as it might be too intrusive on page load if user is not logged in.
+        // The FutureAreaCard will show a relevant message.
+        setIsLoadingSavedShots(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('structured_shots')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching saved shots:", error);
+        toast({
+          title: "加载分镜失败",
+          description: `数据库错误: ${error.message}`,
+          variant: "destructive",
+        });
+        setSavedShots([]);
+      } else {
+        setSavedShots(data || []);
+      }
+    } catch (e) {
+      console.error("Exception fetching saved shots:", e);
+      toast({
+        title: "加载分镜出错",
+        description: "加载过程中发生未知错误。",
+        variant: "destructive",
+      });
+      setSavedShots([]);
+    } finally {
+      setIsLoadingSavedShots(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSavedShots();
+  }, []);
+
   const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string) => {
-    // ... keep existing code (callDeepSeekAPI function)
     try {
       console.log("Invoking deepseek-proxy function with:", { systemPrompt, userPrompt });
       const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
@@ -72,12 +121,11 @@ const DashboardPage = () => {
   };
 
   const handleProcessPlot = async () => {
-    // ... keep existing code (handleProcessPlot function)
     if (!plot) return;
     setIsLoadingScreenwriter(true);
     setScreenwriterOutput('');
     setDirectorOutput(''); 
-    setFinalPrompts('');  
+    // setFinalPrompts('');  
 
     const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
@@ -93,11 +141,10 @@ const DashboardPage = () => {
   };
 
   const handleDirectorProcessing = async () => {
-    // ... keep existing code (handleDirectorProcessing function)
     if (!screenwriterOutput) return;
     setIsLoadingDirector(true);
     setDirectorOutput('');
-    setFinalPrompts(''); 
+    // setFinalPrompts(''); 
 
     const systemPromptDirector = `你是一位经验丰富的电影导演和AI提示词工程师。你将收到一份由编剧撰写的初步剧本。你的任务是：
 1.  仔细阅读和理解剧本内容。
@@ -149,7 +196,6 @@ const DashboardPage = () => {
 
     if (result) {
       setDirectorOutput(result); // Store the raw JSON string
-      // TODO: Add parsing logic here if needed for immediate validation or display
       toast({
         title: "导演 Agent 处理完成",
         description: "已成功生成结构化分镜 (JSON格式)。",
@@ -159,8 +205,6 @@ const DashboardPage = () => {
   };
 
   const handleGenerateFinalPrompts = async () => {
-    // ... keep existing code (handleGenerateFinalPrompts function)
-    // This function is now effectively disabled and will be repurposed later
     toast({
         title: "功能调整中",
         description: "此功能将调整为针对数据库中选定的单个分镜生成提示词。",
@@ -169,7 +213,6 @@ const DashboardPage = () => {
   };
 
   const handleSaveShotsToDatabase = async () => {
-    // ... keep existing code (handleSaveShotsToDatabase function)
     if (!directorOutput) {
         toast({ title: "没有可保存的分镜", description: "请先让导演 Agent 处理剧本。", variant: "destructive"});
         return;
@@ -177,7 +220,6 @@ const DashboardPage = () => {
     setIsSavingShots(true);
     console.log("Attempting to save shots. Raw director output:", directorOutput);
 
-    // Basic validation: check if directorOutput is likely a JSON string starting with '[' and ending with ']'
     const trimmedOutput = directorOutput.trim();
     if (!trimmedOutput.startsWith('[') || !trimmedOutput.endsWith(']')) {
         toast({
@@ -190,7 +232,7 @@ const DashboardPage = () => {
     }
 
     try {
-        const shots = JSON.parse(trimmedOutput); // This can still fail if JSON is malformed inside
+        const shots = JSON.parse(trimmedOutput); 
 
         if (!Array.isArray(shots) || shots.length === 0) {
             toast({
@@ -202,7 +244,6 @@ const DashboardPage = () => {
             return;
         }
         
-        // TODO: Get user_id from Supabase auth
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             toast({ title: "保存失败", description: "用户未登录，无法保存分镜。", variant: "destructive"});
@@ -212,9 +253,9 @@ const DashboardPage = () => {
 
         const shotsToInsert = shots.map(shot => ({
             user_id: user.id,
-            shot_number: String(shot.shot_number || ''), // Ensure string
+            shot_number: String(shot.shot_number || ''), 
             shot_type: String(shot.shot_type || ''),
-            scene_content: String(shot.scene_content || '无内容'), // Ensure non-null for DB
+            scene_content: String(shot.scene_content || '无内容'), 
             dialogue: String(shot.dialogue || ''),
             estimated_duration: String(shot.estimated_duration || ''),
             camera_movement: String(shot.camera_movement || ''),
@@ -222,12 +263,8 @@ const DashboardPage = () => {
             visual_style: String(shot.visual_style || ''),
             key_props: String(shot.key_props || ''),
             director_notes: String(shot.director_notes || ''),
-            // created_at and updated_at will be handled by DB defaults/triggers
         }));
         
-        // Filter out shots that don't have essential content if necessary
-        // For now, let's assume all parsed shots are valid enough to attempt insertion.
-
         const { error } = await supabase.from('structured_shots').insert(shotsToInsert);
 
         if (error) {
@@ -242,7 +279,7 @@ const DashboardPage = () => {
                 title: "分镜保存成功",
                 description: `已成功将 ${shotsToInsert.length} 个分镜保存到数据库。`,
             });
-            // Optionally clear directorOutput or move to next step
+            fetchSavedShots(); // Refresh the list of saved shots
         }
 
     } catch (parseError) {
@@ -289,15 +326,14 @@ const DashboardPage = () => {
             onGenerateFinalPrompts={handleGenerateFinalPrompts}
             isLoadingDirector={isLoadingDirector}
             isSavingShots={isSavingShots}
-            isLoadingFinalPrompts={isLoadingFinalPrompts}
+            isLoadingFinalPrompts={false} // isLoadingFinalPrompts from state no longer used here
           />
         </div>
       </div>
 
       <FutureAreaCard
-        finalPrompts={finalPrompts}
-        // setFinalPrompts={setFinalPrompts} // Removed as per component change
-        isLoadingFinalPrompts={isLoadingFinalPrompts}
+        savedShots={savedShots}
+        isLoadingSavedShots={isLoadingSavedShots}
       />
     </div>
   );

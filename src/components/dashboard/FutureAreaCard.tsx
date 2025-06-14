@@ -1,39 +1,67 @@
 
 import React from 'react';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2 } from 'lucide-react';
+import { Tables } from '@/integrations/supabase/types';
+
+type Shot = Tables<'structured_shots'>;
 
 interface FutureAreaCardProps {
-  finalPrompts: string;
-  // setFinalPrompts: (prompts: string) => void; // This setter seems unused in the original display logic if placeholder is shown
-  isLoadingFinalPrompts: boolean; // To decide if placeholder or prompt area is shown
+  savedShots: Shot[];
+  isLoadingSavedShots: boolean;
 }
 
 const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
-  finalPrompts,
-  // setFinalPrompts,
-  isLoadingFinalPrompts,
+  savedShots,
+  isLoadingSavedShots,
 }) => {
   return (
     <Card className="mt-12">
       <CardHeader>
-        <CardTitle className="text-2xl">AI生图/生视频素材区 (规划中)</CardTitle>
+        <CardTitle className="text-2xl">已保存分镜列表</CardTitle>
         <CardDescription>
-          这里将展示从数据库加载的已保存分镜列表。您可以选择某个分镜，然后使用AI生成图像提示词或进行视频生成操作。
+          这里展示了您已保存到数据库的分镜。您可以选择一个分镜进行后续的 AI 生图或生视频操作 (功能规划中)。
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {finalPrompts ? (
-          <Textarea
-            value={finalPrompts}
-            readOnly // Assuming this is display-only as per previous logic
-            className="min-h-[100px] bg-muted/30 text-sm"
-            placeholder="旧版全局提示词输出区域（此功能已调整）"
-          />
-        ) : !isLoadingFinalPrompts ? (
-          <p className="text-muted-foreground">等待导演 Agent 完成结构化分镜处理，并保存到数据库后，可在此处进行后续操作...</p>
-        ) : null}
-        {/* If isLoadingFinalPrompts is true and no finalPrompts, nothing specific is shown here based on original logic */}
+        {isLoadingSavedShots ? (
+          <div className="flex items-center justify-center text-muted-foreground py-8">
+            <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+            正在加载分镜...
+          </div>
+        ) : savedShots.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">镜号</TableHead>
+                <TableHead className="w-[120px]">景别</TableHead>
+                <TableHead>画面内容</TableHead>
+                <TableHead className="w-[100px]">预估时长</TableHead>
+                {/* <TableHead className="w-[100px]">操作</TableHead> */}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {savedShots.map((shot) => (
+                <TableRow key={shot.id}>
+                  <TableCell>{shot.shot_number || 'N/A'}</TableCell>
+                  <TableCell>{shot.shot_type || 'N/A'}</TableCell>
+                  <TableCell className="max-w-xs truncate" title={shot.scene_content || undefined}>
+                    {shot.scene_content || '无内容'}
+                  </TableCell>
+                  <TableCell>{shot.estimated_duration || 'N/A'}</TableCell>
+                  {/* <TableCell>
+                    <Button variant="outline" size="sm" disabled>选择</Button>
+                  </TableCell> */}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-muted-foreground text-center py-8">
+            您还没有保存任何分镜，或者您需要先登录。请先使用导演 Agent 生成并保存分镜。
+          </p>
+        )}
       </CardContent>
     </Card>
   );
