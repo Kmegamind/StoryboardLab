@@ -2,16 +2,12 @@ import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-// import { Input } from '@/components/ui/input'; // Removed Input
 import { toast } from "@/components/ui/use-toast";
-import { ArrowRight, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client'; // Ensure supabase client is imported
-
-// const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'; // Not needed here anymore
+import { ArrowRight, Loader2, Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const DashboardPage = () => {
   const [plot, setPlot] = useState<string>('');
-  // const [apiKey, setApiKey] = useState<string>('sk-169ffc0001d9470a9b313d4312d90183'); // Removed API Key state
   const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
   const [directorOutput, setDirectorOutput] = useState<string>('');
   const [finalPrompts, setFinalPrompts] = useState<string>('');
@@ -19,6 +15,7 @@ const DashboardPage = () => {
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
   const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
   const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
+  const [isSavingShots, setIsSavingShots] = useState<boolean>(false);
 
   const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string) => {
     try {
@@ -39,23 +36,17 @@ const DashboardPage = () => {
 
       console.log("Edge Function response data:", data);
 
-      // The Edge Function should return a JSON object.
-      // If successful, it might look like { "content": "..." }
-      // If error within Edge Function (e.g., DeepSeek API error), it might be { "error": "message" }
       if (data && data.content) {
         return data.content;
       } else if (data && data.error) {
-        // This handles errors returned by the DeepSeek API via our Edge Function
         console.error('API Error from Edge Function:', data.error);
         toast({
           title: "API 请求失败 (通过 Edge Function)",
-          // data.error could be a string or an object like { message: "...", type: "..." }
           description: `错误: ${typeof data.error === 'string' ? data.error : data.error.message || '未知 API 错误'}`,
           variant: "destructive",
         });
         return null;
       } else {
-        // This case handles unexpected responses from the Edge Function itself
         toast({
           title: "Edge Function 响应格式错误",
           description: "未能从 Edge Function 获取有效回复。",
@@ -63,7 +54,7 @@ const DashboardPage = () => {
         });
         return null;
       }
-    } catch (error) { // Catches network errors when trying to reach the Edge Function
+    } catch (error) { 
       console.error('Error invoking Edge Function:', error);
       toast({
         title: "调用 Edge Function 出错",
@@ -78,27 +69,17 @@ const DashboardPage = () => {
     if (!plot) return;
     setIsLoadingScreenwriter(true);
     setScreenwriterOutput('');
+    setDirectorOutput('');
+    setFinalPrompts('');
 
-    const systemPromptScreenwriter = `你是一位专业的电影编剧和AI提示词工程师。请根据用户提供的故事/情节，将其详细分解为一系列镜头。对于每个镜头，请提供以下信息，并尽量使用清晰的结构化文本格式输出，例如Markdown表格或编号列表：
-- **镜号**: (例如：1, 2, 3...)
-- **景别**: (例如：全景, 中景, 近景, 特写, 大特写, 远景)
-- **画面内容**: (详细描述画面中看到的内容，包括环境、角色、角色动作与表情、光线氛围等)
-- **台词**: (如果该镜头有台词，请注明说话人)
-- **预估时长**: (例如：3秒, 5-7秒)
-- **运镜方式**: (例如：固定镜头, 推镜头, 拉镜头, 摇镜头, 跟随镜头, 升降镜头, 旋转镜头, 主观镜头)
-- **音效/音乐**: (关键的声音元素，环境音，或背景音乐的风格和情绪描述)
-- **画面风格参考**: (例如：电影《银翼杀手》的霓虹赛博朋克风格, 宫崎骏动画的明亮温暖童话风格, 黑白胶片质感的悬疑风格)
-- **关键道具**: (镜头中出现的对情节或视觉重要的道具)
-- **情绪识别点/导演注释**: (例如：角色A惊讶, 整体氛围紧张, 此处特写角色B的眼神以表达其内心挣扎)
-
-在镜头列表之前，你可以选择性地提供一个总体的故事简介、主要角色介绍和故事大纲。请确保每个镜头信息尽可能完整、具体，结构清晰，方便后续生成图像。`;
+    const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
 
     if (result) {
       setScreenwriterOutput(result);
       toast({
         title: "编剧 Agent 处理完成",
-        description: "已成功生成初步的结构化剧本概要。",
+        description: "已成功生成初步剧本内容。",
       });
     }
     setIsLoadingScreenwriter(false);
@@ -108,36 +89,44 @@ const DashboardPage = () => {
     if (!screenwriterOutput) return;
     setIsLoadingDirector(true);
     setDirectorOutput('');
+    setFinalPrompts('');
 
-    const systemPromptDirector = "你是一位经验丰富的电影导演。用户将提供一份由编剧 Agent 处理过的结构化剧本（可能包含镜号、景别、画面内容、台词等信息）。请仔细审阅这份剧本，并针对每个或重要的镜头，补充或优化以下内容：\n- **分镜建议细化**: 基于编剧的描述，给出更具体的分镜构图想法，例如视觉焦点、角色位置关系、前景/背景元素。\n- **视觉风格确认与延展**: 对编剧提出的风格参考进行确认，或提出更具体的视觉风格元素（色彩、光影、质感）。如果编剧未提供，请给出你的建议。\n- **拍摄要点**: 针对关键场景，指出拍摄时的注意事项，例如特殊摄影技巧、灯光布置要点。\n- **节奏控制建议**: 对场景或连续镜头的节奏提出建议，例如快切、慢节奏、镜头时长等。\n- **情绪与氛围强化**: 如何通过视觉和听觉元素进一步强化场景所需的情绪和氛围。\n请以清晰、有条理的方式输出你的导演意见，可以直接在编剧提供的结构上进行补充或评论。";
+    const systemPromptDirector = "你是一位经验丰富的电影导演和AI提示词工程师。你将收到一份由编剧撰写的初步剧本。你的任务是：\n1.  仔细阅读和理解剧本内容。\n2.  将剧本详细分解为一系列具体的镜头。\n3.  对于每一个镜头，请以清晰、结构化的方式提供以下信息。**强烈建议为每个镜头生成一个JSON对象，并将所有镜头的JSON对象组织在一个JSON数组中。如果无法输出JSON数组，请使用Markdown表格，确保每一行代表一个镜头，并且列的顺序和名称严格如下：**\n    *   `shot_number` (镜号): (例如：1, 2, 3A, 3B...)\n    *   `shot_type` (景别): (例如：全景, 中景, 近景, 特写, 大特写, 远景)\n    *   `scene_content` (画面内容): (详细描述画面中看到的内容，包括环境、角色、角色动作与表情、光线氛围等)\n    *   `dialogue` (台词): (如果该镜头有台词，请注明说话人；如无，则留空或注明“无”)\n    *   `estimated_duration` (预估时长): (例如：3秒, 5-7秒)\n    *   `camera_movement` (运镜方式): (例如：固定镜头, 推镜头, 拉镜头, 摇镜头, 跟随镜头, 升降镜头, 旋转镜头, 主观镜头；如无特定要求，可留空)\n    *   `sound_music` (音效/音乐): (关键的声音元素，环境音，或背景音乐的风格和情绪描述)\n    *   `visual_style` (画面风格参考): (例如：电影《银翼杀手》的霓虹赛博朋克风格, 宫崎骏动画的明亮温暖童话风格, 黑白胶片质感的悬疑风格)\n    *   `key_props` (关键道具): (镜头中出现的对情节或视觉重要的道具)\n    *   `director_notes` (情绪识别点/导演注释): (例如：角色A惊讶, 整体氛围紧张, 此处特写角色B的眼神以表达其内心挣扎)\n\n请确保输出的结构化信息完整、具体，方便后续进行数据库存储和AI图像生成。\n例如，JSON数组的格式应为：\n```json\n[\n  {\n    \"shot_number\": \"1\",\n    \"shot_type\": \"全景\",\n    \"scene_content\": \"夜晚的赛博朋克都市，霓虹灯闪烁，雨水湿润街道，一艘飞行车载着主角低空掠过。\",\n    \"dialogue\": \"无\",\n    \"estimated_duration\": \"5秒\",\n    \"camera_movement\": \"跟随镜头\",\n    \"sound_music\": \"电子合成器音乐，雨声，飞行器引擎声\",\n    \"visual_style\": \"《银翼杀手2049》风格，冷色调，高对比度\",\n    \"key_props\": \"飞行车, 全息广告牌\",\n    \"director_notes\": \"营造神秘和广阔的都市氛围，主角显得渺小。\"\n  },\n  {\n    \"shot_number\": \"2\"\n    // ... more fields ...\n  }\n]\n```";
     const result = await callDeepSeekAPI(systemPromptDirector, screenwriterOutput);
 
     if (result) {
       setDirectorOutput(result);
       toast({
         title: "导演 Agent 处理完成",
-        description: "已成功生成导演处理意见。",
+        description: "已成功生成结构化分镜建议。",
       });
     }
     setIsLoadingDirector(false);
   };
-  
-  const handleGenerateFinalPrompts = async () => {
-    if (!directorOutput) return;
-    setIsLoadingFinalPrompts(true);
-    setFinalPrompts('');
 
-    const systemPromptFinal = "你是一个顶级的 AI 图像生成提示词工程师。用户将提供一份经过编剧和导演处理的详细电影场景描述，这份描述可能已经包含了镜号、景别、详细画面内容、角色动作表情、台词、运镜方式、音效音乐氛围、画面风格参考、关键道具以及导演的关键注释和情绪识别点。\n你的任务是：根据这些极其详尽的输入，为每一个镜头或关键画面生成一个或多个可以直接用于先进 AI 图像生成工具（如 Midjourney v6+, DALL-E 3, Stable Diffusion XL/Flux）的、高质量的英文提示词 (prompts)。\n**提示词要求**：\n1.  **高度具体**：包含场景（室内/室外，具体地点）、时间（白天/夜晚/黄昏）、角色（外貌特征、服装、姿势、表情、情绪）、物体、构图（景别如 close-up, medium shot, full shot, establishing shot；摄像机角度如 low angle, high angle, eye-level）、光照（如 cinematic lighting, soft light, rim lighting, volumetric lighting）、色彩（如 vibrant colors, monochrome, pastel palette）、艺术风格（如 photorealistic, hyperrealistic, anime style, impressionistic, cyberpunk, fantasy art, specific artist's style like Greg Rutkowski or Alphonse Mucha）、以及任何能增强画面效果的关键词（如 8K, ultra-detailed, sharp focus, dramatic atmosphere）。\n2.  **英文输出**：所有提示词必须是英文。\n3.  **结构化**：如果输入是分镜头的，请为每个镜头生成对应的提示词，并清晰标注对应的镜号或场景描述，以便用户对应。\n4.  **参数化（可选）**: 可以适当使用 Midjourney/SD 的参数，如 `--ar` (aspect ratio), `--style raw`, `--stylize`, `--chaos`, `--v 6.0` 等，如果这些参数有助于实现导演的意图。\n5.  **避免空泛**: 不要使用过于主观或AI难以理解的描述，力求画面元素的可实现性。\n6.  **多个提示词**: 对于复杂的场景，可以生成多个略有差异的提示词，给用户更多选择。\n请直接输出提示词列表。";
-    const result = await callDeepSeekAPI(systemPromptFinal, directorOutput);
-    
-    if (result) {
-      setFinalPrompts(result);
-      toast({
-        title: "最终提示词生成完毕",
-        description: "已成功生成AI绘图提示词系列。",
-      });
+  const handleSaveShotsToDatabase = async () => {
+    if (!directorOutput) {
+        toast({ title: "没有可保存的分镜", description: "请先让导演 Agent 处理剧本。", variant: "destructive"});
+        return;
     }
-    setIsLoadingFinalPrompts(false);
+    setIsSavingShots(true);
+    console.log("Attempting to save shots. Raw director output:", directorOutput);
+    // TODO: Implement parsing of directorOutput (JSON string or Markdown) into an array of shot objects.
+    // TODO: Get user_id from Supabase auth: const { data: { user } } = await supabase.auth.getUser(); if (!user) {toast error, return}
+    // TODO: Map parsed shots to the structure required by 'structured_shots' table, including user_id.
+    // TODO: const { error } = await supabase.from('structured_shots').insert(parsedShotsWithUserId);
+    // TODO: Handle success/error with toasts.
+
+    // Placeholder logic:
+    toast({
+      title: "保存功能待实现",
+      description: "正在开发将结构化分镜保存到数据库的功能。当前输出已在控制台打印。",
+    });
+    console.log("Simulating save for director output: ", directorOutput);
+    // For now, we'll just simulate a delay and then stop loading
+    setTimeout(() => {
+      setIsSavingShots(false);
+    }, 2000);
   };
 
   return (
@@ -148,9 +137,6 @@ const DashboardPage = () => {
           输入您的故事灵感，让AI Agent逐步细化，最终生成惊艳的视觉提示词。
         </p>
       </header>
-
-      {/* API Key Card Removed */}
-      {/* ... keep existing code (API Key Card commented out) ... */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <Card className="md:col-span-1">
@@ -168,7 +154,7 @@ const DashboardPage = () => {
             <Button 
               onClick={handleProcessPlot} 
               className="mt-4 w-full" 
-              disabled={!plot || isLoadingScreenwriter} // Removed !apiKey
+              disabled={!plot || isLoadingScreenwriter}
             >
               {isLoadingScreenwriter ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -184,7 +170,7 @@ const DashboardPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>2. 编剧 Agent 处理</CardTitle>
-              <CardDescription>角色设定、故事大纲、对话脚本等。AI将尝试按结构化格式输出。</CardDescription>
+              <CardDescription>AI将根据您的情节生成初步的叙事性剧本。</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoadingScreenwriter && !screenwriterOutput && (
@@ -195,7 +181,7 @@ const DashboardPage = () => {
               )}
               {screenwriterOutput ? (
                 <>
-                  <p className="text-muted-foreground mb-2">处理结果 (可编辑):</p>
+                  <p className="text-muted-foreground mb-2">初步剧本 (可编辑):</p>
                   <Textarea 
                     value={screenwriterOutput} 
                     onChange={(e) => setScreenwriterOutput(e.target.value)}
@@ -211,7 +197,7 @@ const DashboardPage = () => {
                     ) : (
                       <ArrowRight className="mr-2 h-4 w-4" />
                     )}
-                    移交导演 Agent
+                    移交导演 Agent (生成结构化分镜)
                   </Button>
                 </>
               ) : (
@@ -222,8 +208,8 @@ const DashboardPage = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>3. 导演 Agent 处理</CardTitle>
-              <CardDescription>分镜脚本、视觉风格建议、节奏控制等。</CardDescription>
+              <CardTitle>3. 导演 Agent 处理 (结构化分镜)</CardTitle>
+              <CardDescription>AI将把剧本分解为结构化的分镜列表（建议输出为JSON格式）。</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoadingDirector && !directorOutput && (
@@ -234,27 +220,40 @@ const DashboardPage = () => {
               )}
               {directorOutput ? (
                 <>
-                  <p className="text-muted-foreground mb-2">处理结果 (可编辑):</p>
+                  <p className="text-muted-foreground mb-2">结构化分镜列表 (可编辑, 建议JSON格式):</p>
                   <Textarea 
                     value={directorOutput} 
                     onChange={(e) => setDirectorOutput(e.target.value)}
-                    className="min-h-[100px] bg-muted/30" 
+                    className="min-h-[150px] bg-muted/30" 
                   />
                   <Button 
-                    onClick={handleGenerateFinalPrompts} 
+                    onClick={handleSaveShotsToDatabase} 
                     className="mt-4 w-full"
-                    disabled={isLoadingFinalPrompts || !directorOutput}
+                    disabled={isSavingShots || !directorOutput} 
+                  >
+                     {isSavingShots ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                     保存分镜到数据库 (待实现)
+                  </Button>
+                  <Button 
+                    onClick={handleGenerateFinalPrompts} 
+                    className="mt-2 w-full"
+                    disabled={true}
+                    variant="outline"
                   >
                      {isLoadingFinalPrompts ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <ArrowRight className="mr-2 h-4 w-4" />
                     )}
-                     生成最终提示词
+                     (后续功能) 生成选中分镜的图像提示词
                   </Button>
                 </>
               ) : (
-                !isLoadingDirector && <p className="text-muted-foreground">等待编剧 Agent 完成处理...</p>
+                !isLoadingDirector && <p className="text-muted-foreground">等待编剧 Agent 完成处理，或导演 Agent 生成结构化分镜...</p>
               )}
             </CardContent>
           </Card>
@@ -263,26 +262,22 @@ const DashboardPage = () => {
 
       <Card className="mt-12">
         <CardHeader>
-          <CardTitle className="text-2xl">最终输出：AI生图提示词系列</CardTitle>
+          <CardTitle className="text-2xl">AI生图/生视频素材区 (规划中)</CardTitle>
           <CardDescription>
-            这里将展示根据您的创意和Agent处理结果生成的、可用于AI绘画工具的详细提示词 (可编辑)。
+            这里将展示从数据库加载的已保存分镜列表。您可以选择某个分镜，然后使用AI生成图像提示词或进行视频生成操作。
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoadingFinalPrompts && !finalPrompts && (
-            <div className="flex items-center justify-center text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              生成中...
-            </div>
-          )}
-          {finalPrompts ? (
-            <Textarea 
+          {finalPrompts && (
+             <Textarea 
               value={finalPrompts} 
               onChange={(e) => setFinalPrompts(e.target.value)}
-              className="min-h-[150px] bg-muted/30 text-lg" 
+              className="min-h-[100px] bg-muted/30 text-sm" 
+              placeholder="旧版全局提示词输出区域（此功能已调整）"
             />
-          ) : (
-            !isLoadingFinalPrompts && <p className="text-muted-foreground">等待所有Agent处理完成...</p>
+          )}
+          {!finalPrompts && !isLoadingFinalPrompts && (
+            <p className="text-muted-foreground">等待导演 Agent 完成结构化分镜处理，并保存到数据库后，可在此处进行后续操作...</p>
           )}
         </CardContent>
       </Card>

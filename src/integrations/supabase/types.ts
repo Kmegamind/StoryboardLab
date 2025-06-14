@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      structured_shots: {
+        Row: {
+          camera_movement: string | null
+          created_at: string
+          dialogue: string | null
+          director_notes: string | null
+          estimated_duration: string | null
+          id: string
+          key_props: string | null
+          scene_content: string
+          shot_number: string | null
+          shot_type: string | null
+          sound_music: string | null
+          updated_at: string
+          user_id: string | null
+          visual_style: string | null
+        }
+        Insert: {
+          camera_movement?: string | null
+          created_at?: string
+          dialogue?: string | null
+          director_notes?: string | null
+          estimated_duration?: string | null
+          id?: string
+          key_props?: string | null
+          scene_content: string
+          shot_number?: string | null
+          shot_type?: string | null
+          sound_music?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visual_style?: string | null
+        }
+        Update: {
+          camera_movement?: string | null
+          created_at?: string
+          dialogue?: string | null
+          director_notes?: string | null
+          estimated_duration?: string | null
+          id?: string
+          key_props?: string | null
+          scene_content?: string
+          shot_number?: string | null
+          shot_type?: string | null
+          sound_music?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visual_style?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
