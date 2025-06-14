@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Camera, Palette } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -12,6 +13,10 @@ interface SelectedShotActionsCardProps {
   onGeneratePrompts: () => void;
   isLoadingPrompts: boolean;
   generatedPrompts: string | null;
+  onGenerateCinematographerPlan: () => void;
+  isLoadingCinematographer: boolean;
+  onGenerateArtDirectorPlan: () => void;
+  isLoadingArtDirector: boolean;
 }
 
 const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
@@ -19,18 +24,24 @@ const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
   onGeneratePrompts,
   isLoadingPrompts,
   generatedPrompts,
+  onGenerateCinematographerPlan,
+  isLoadingCinematographer,
+  onGenerateArtDirectorPlan,
+  isLoadingArtDirector,
 }) => {
   if (!selectedShot) {
     return null; // Don't render anything if no shot is selected
   }
 
+  const isAnyLoading = isLoadingPrompts || isLoadingCinematographer || isLoadingArtDirector;
+
   return (
     <Card className="mt-8">
       <CardHeader>
-        <CardTitle className="text-2xl">为选中分镜生成视觉方案与提示词</CardTitle>
+        <CardTitle className="text-2xl">为选中分镜生成 AI 方案</CardTitle>
         <CardDescription>
           已选择分镜号: <span className="font-semibold text-primary">{selectedShot.shot_number || 'N/A'}</span>. 
-          点击下方按钮，AI 将根据此分镜的详细信息生成一份包含多角度镜头设计的视觉方案和提示词。
+          点击下方按钮，让不同的 AI Agent 为此分镜生成专业方案。
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -43,25 +54,43 @@ const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
             {selectedShot.director_notes && <p className="text-sm text-muted-foreground"><strong>导演注释:</strong> {selectedShot.director_notes}</p>}
           </div>
           
-          <Button
-            onClick={onGeneratePrompts}
-            disabled={isLoadingPrompts}
-            className="w-full"
-          >
-            {isLoadingPrompts ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
-            )}
-            生成视觉方案
-          </Button>
-
-          {isLoadingPrompts && !generatedPrompts && (
-            <div className="flex items-center justify-center text-muted-foreground py-4">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              正在生成提示词...
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Button
+              onClick={onGeneratePrompts}
+              disabled={isAnyLoading}
+            >
+              {isLoadingPrompts ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Sparkles />
+              )}
+              生成视觉方案
+            </Button>
+            <Button
+              onClick={onGenerateCinematographerPlan}
+              disabled={isAnyLoading}
+              variant="secondary"
+            >
+              {isLoadingCinematographer ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Camera />
+              )}
+              移交摄像 Agent
+            </Button>
+            <Button
+              onClick={onGenerateArtDirectorPlan}
+              disabled={isAnyLoading}
+              variant="secondary"
+            >
+              {isLoadingArtDirector ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Palette />
+              )}
+              移交美术 Agent
+            </Button>
+          </div>
 
           {generatedPrompts && (
             <div>

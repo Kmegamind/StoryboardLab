@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import PlotInputCard from '@/components/dashboard/PlotInputCard';
@@ -6,6 +5,8 @@ import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCar
 import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
 import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
+import AgentAnalysisCard from '@/components/dashboard/AgentAnalysisCard';
+import { Camera, Palette } from 'lucide-react';
 
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
 import { useDirectorProcessing } from '@/hooks/useDirectorProcessing';
@@ -18,10 +19,16 @@ const DashboardPage = () => {
     selectedShot,
     generatedImagePrompts,
     isLoadingImagePrompts,
+    cinematographerPlan,
+    isLoadingCinematographer,
+    artDirectorPlan,
+    isLoadingArtDirector,
     fetchSavedShots,
     selectShot,
     generatePromptsForSelectedShot,
-    clearSelectedShotAndPrompts, // Renamed from clearSelectedShot
+    generateCinematographerPlan,
+    generateArtDirectorPlan,
+    clearSelectedShotAndPrompts,
   } = useShotManagement();
 
   const {
@@ -116,12 +123,32 @@ const DashboardPage = () => {
       />
 
       {selectedShot && (
-        <SelectedShotActionsCard
-          selectedShot={selectedShot}
-          onGeneratePrompts={generatePromptsForSelectedShot}
-          isLoadingPrompts={isLoadingImagePrompts}
-          generatedPrompts={generatedImagePrompts}
-        />
+        <>
+          <SelectedShotActionsCard
+            selectedShot={selectedShot}
+            onGeneratePrompts={generatePromptsForSelectedShot}
+            isLoadingPrompts={isLoadingImagePrompts}
+            generatedPrompts={generatedImagePrompts}
+            onGenerateCinematographerPlan={generateCinematographerPlan}
+            isLoadingCinematographer={isLoadingCinematographer}
+            onGenerateArtDirectorPlan={generateArtDirectorPlan}
+            isLoadingArtDirector={isLoadingArtDirector}
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <AgentAnalysisCard 
+              title="摄像 Agent 方案"
+              isLoading={isLoadingCinematographer}
+              analysis={cinematographerPlan}
+              icon={<Camera className="h-6 w-6 text-primary" />}
+            />
+            <AgentAnalysisCard 
+              title="美术指导 Agent 方案"
+              isLoading={isLoadingArtDirector}
+              analysis={artDirectorPlan}
+              icon={<Palette className="h-6 w-6 text-primary" />}
+            />
+          </div>
+        </>
       )}
     </div>
   );
