@@ -3,77 +3,72 @@ import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input'; // Added
-import { toast } from "@/components/ui/use-toast"; // Added
-import { ArrowRight, Loader2 } from 'lucide-react'; // Added Loader2
+// import { Input } from '@/components/ui/input'; // Removed Input
+import { toast } from "@/components/ui/use-toast";
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client'; // Ensure supabase client is imported
 
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
+// const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'; // Not needed here anymore
 
 const DashboardPage = () => {
   const [plot, setPlot] = useState<string>('');
-  const [apiKey, setApiKey] = useState<string>('sk-169ffc0001d9470a9b313d4312d90183'); // Added API Key state with default
+  // const [apiKey, setApiKey] = useState<string>('sk-169ffc0001d9470a9b313d4312d90183'); // Removed API Key state
   const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
   const [directorOutput, setDirectorOutput] = useState<string>('');
   const [finalPrompts, setFinalPrompts] = useState<string>('');
 
-  const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false); // Added loading state
-  const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false); // Added loading state
-  const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false); // Added loading state
+  const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
+  const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
+  const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
 
   const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string) => {
-    if (!apiKey) {
-      toast({
-        title: "API 密钥缺失",
-        description: "请输入您的 DeepSeek API 密钥。",
-        variant: "destructive",
-      });
-      return null;
-    }
-
     try {
-      const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          stream: false,
-        }),
+      console.log("Invoking deepseek-proxy function with:", { systemPrompt, userPrompt });
+      const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
+        body: { systemPrompt, userPrompt },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
+      if (error) {
+        console.error('Edge Function Error:', error);
         toast({
-          title: "API 请求失败",
-          description: `错误: ${errorData.error?.message || response.statusText}`,
+          title: "Edge Function 调用失败",
+          description: `错误: ${error.message}`,
           variant: "destructive",
         });
         return null;
       }
 
-      const data = await response.json();
-      if (data.choices && data.choices.length > 0) {
-        return data.choices[0].message.content;
-      } else {
+      console.log("Edge Function response data:", data);
+
+      // The Edge Function should return a JSON object.
+      // If successful, it might look like { "content": "..." }
+      // If error within Edge Function (e.g., DeepSeek API error), it might be { "error": "message" }
+      if (data && data.content) {
+        return data.content;
+      } else if (data && data.error) {
+        // This handles errors returned by the DeepSeek API via our Edge Function
+        console.error('API Error from Edge Function:', data.error);
         toast({
-          title: "API 响应格式错误",
-          description: "未能从API获取有效回复。",
+          title: "API 请求失败 (通过 Edge Function)",
+          // data.error could be a string or an object like { message: "...", type: "..." }
+          description: `错误: ${typeof data.error === 'string' ? data.error : data.error.message || '未知 API 错误'}`,
+          variant: "destructive",
+        });
+        return null;
+      } else {
+        // This case handles unexpected responses from the Edge Function itself
+        toast({
+          title: "Edge Function 响应格式错误",
+          description: "未能从 Edge Function 获取有效回复。",
           variant: "destructive",
         });
         return null;
       }
-    } catch (error) {
-      console.error('Fetch Error:', error);
+    } catch (error) { // Catches network errors when trying to reach the Edge Function
+      console.error('Error invoking Edge Function:', error);
       toast({
-        title: "网络请求错误",
-        description: `请求API时发生错误: ${error instanceof Error ? error.message : String(error)}`,
+        title: "调用 Edge Function 出错",
+        description: `请求 Edge Function 时发生网络或未知错误: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
       return null;
@@ -83,7 +78,7 @@ const DashboardPage = () => {
   const handleProcessPlot = async () => {
     if (!plot) return;
     setIsLoadingScreenwriter(true);
-    setScreenwriterOutput(''); // Clear previous output
+    setScreenwriterOutput('');
 
     const systemPromptScreenwriter = "你是一位专业的电影编剧。请根据用户提供的故事/情节，生成一份详细的剧本概要，包括主要角色介绍、故事大纲、开端、发展、高潮和结局。请确保内容结构清晰，引人入胜。";
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
@@ -101,7 +96,7 @@ const DashboardPage = () => {
   const handleDirectorProcessing = async () => {
     if (!screenwriterOutput) return;
     setIsLoadingDirector(true);
-    setDirectorOutput(''); // Clear previous output
+    setDirectorOutput('');
 
     const systemPromptDirector = "你是一位经验丰富的电影导演。用户将提供一份剧本概要。请根据这份概要，提出分镜建议、视觉风格参考（例如，参考哪些电影的风格）、以及关键场景的拍摄要点和节奏控制建议。";
     const result = await callDeepSeekAPI(systemPromptDirector, screenwriterOutput);
@@ -119,7 +114,7 @@ const DashboardPage = () => {
   const handleGenerateFinalPrompts = async () => {
     if (!directorOutput) return;
     setIsLoadingFinalPrompts(true);
-    setFinalPrompts(''); // Clear previous output
+    setFinalPrompts('');
 
     const systemPromptFinal = "你是一个 AI 提示词工程师。用户将提供导演处理后的分镜和视觉建议。请根据这些信息，生成一系列详细的、可以直接用于 AI 图像生成工具（如 Midjourney, Stable Diffusion）的提示词 (prompts)。每个提示词应该专注于一个具体的镜头或场景，并包含场景描述、人物动作、情绪氛围、画面构图、光线、色彩、以及可能的艺术风格。请确保提示词具体、丰富，能够引导 AI 生成高质量、符合要求的图像。请输出多个提示词，每个提示词占一行。";
     const result = await callDeepSeekAPI(systemPromptFinal, directorOutput);
@@ -143,6 +138,8 @@ const DashboardPage = () => {
         </p>
       </header>
 
+      {/* API Key Card Removed */}
+      {/*
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>API 设置</CardTitle>
@@ -150,7 +147,7 @@ const DashboardPage = () => {
         </CardHeader>
         <CardContent>
           <Input
-            type="password" // Mask the API key
+            type="password"
             placeholder="输入您的 DeepSeek API Key"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
@@ -161,9 +158,9 @@ const DashboardPage = () => {
           </p>
         </CardContent>
       </Card>
+      */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        {/* Column 1: Input */}
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle>1. 输入您的故事/情节</CardTitle>
@@ -179,7 +176,7 @@ const DashboardPage = () => {
             <Button 
               onClick={handleProcessPlot} 
               className="mt-4 w-full" 
-              disabled={!plot || !apiKey || isLoadingScreenwriter}
+              disabled={!plot || isLoadingScreenwriter} // Removed !apiKey
             >
               {isLoadingScreenwriter ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -191,7 +188,6 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        {/* Column 2: Agent Processing Steps */}
         <div className="md:col-span-2 space-y-8">
           <Card>
             <CardHeader>
@@ -212,7 +208,7 @@ const DashboardPage = () => {
                   <Button 
                     onClick={handleDirectorProcessing} 
                     className="mt-4 w-full"
-                    disabled={isLoadingDirector || !apiKey}
+                    disabled={isLoadingDirector} // Removed !apiKey
                   >
                     {isLoadingDirector ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -247,7 +243,7 @@ const DashboardPage = () => {
                   <Button 
                     onClick={handleGenerateFinalPrompts} 
                     className="mt-4 w-full"
-                    disabled={isLoadingFinalPrompts || !apiKey}
+                    disabled={isLoadingFinalPrompts} // Removed !apiKey
                   >
                      {isLoadingFinalPrompts ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -265,7 +261,6 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Final Output Section */}
       <Card className="mt-12">
         <CardHeader>
           <CardTitle className="text-2xl">最终输出：AI生图提示词系列</CardTitle>
