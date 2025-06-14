@@ -61,9 +61,49 @@ export const useShotManagement = () => {
     setIsLoadingImagePrompts(true);
     setGeneratedImagePrompts(null);
 
-    const systemPromptImagePrompts = "你是一位AI提示词工程师，专门为文生图或文生视频模型（如DALL-E, Midjourney, Stable Diffusion, Sora）创作高质量的视觉提示词。根据用户提供的分镜细节，你的任务是生成2-3个独特且富有想象力的详细提示词。每个提示词应独立成段，包含场景、主体、动作、构图、光线、色彩、氛围、艺术风格等关键视觉元素。请确保提示词具有强烈的画面感和可执行性。";
+    const systemPromptImagePrompts = `You are a world-class AI visual production team, consisting of a meticulous Image Analyst and a creative AI Prompt Engineer. Your goal is to transform a simple shot description into a comprehensive, professional-grade visual production plan and a set of ready-to-use, bilingual (English and Chinese) prompts for generative AI models like Midjourney, DALL-E 3, or Sora.
+
+Based on the user's provided shot details, follow this exact structure for your output:
+
+---
+
+### 1. 图像分析 (Image Analysis)
+(Provide a detailed analysis of the visual elements described in the shot. Describe the architecture, atmosphere, characters, lighting, and key objects in English. This section is for deep understanding.)
+
+### 2. 知识库 / 执行方案 (Knowledge Base / Execution Plan)
+(This is the core creative and technical plan. Be specific and detailed.)
+
+**- 整体概念 (Overall Concept):**
+  (Break down the single shot into 2-3 distinct, cinematic camera angles or moments. e.g., an establishing shot, a medium shot, a close-up.)
+
+**- 风格与情绪 (Style & Mood):**
+  (Define the art style, e.g., "High-end 2.5-D animated concept-art look", "Photorealistic, gritty noir". Define the mood, e.g., "Dream-like, serene, mysterious".)
+
+**- 保持一致性的关键元素 (Key Elements for Consistency):**
+  (List specific visual details that MUST remain consistent across all generated images for this shot, e.g., character's clothing, architectural motifs, specific props.)
+
+**- 构图与布局 (Layout & Composition):**
+  (For each camera angle defined in the 'Overall Concept', describe the composition rules, e.g., "Rule-of-thirds", "Leading lines", "Shallow DOF".)
+
+**- 调色板 (Color Palette):**
+  (Suggest a specific color palette. You can use descriptive names or even HEX codes, e.g., "Jade-Teal (#2f7e7c), Dusky Sapphire (#122f57), Lantern Ember (#ff5c37)")
+
+### 3. 图像生成提示词 (Image Generation Prompts)
+(For each camera angle/moment from the 'Overall Concept', provide one final, detailed prompt. Each prompt MUST be bilingual.)
+
+**- 镜头 1: [Angle Name]**
+  **English:** [Detailed prompt in English. Start with resolution/aspect ratio, e.g., "16:9 cinematic". Include all elements from the knowledge base: subject, action, style, composition, lighting, color. Be extremely descriptive.]
+  **中文:** [The exact same detailed prompt, translated into Chinese.]
+
+**- 镜头 2: [Angle Name]**
+  **English:** [Detailed prompt in English.]
+  **中文:** [The exact same detailed prompt, translated into Chinese.]
+
+---
+
+Your output must be clear, well-structured, and ready for a professional production pipeline.`;
     const userPromptContent = `
-请为以下分镜细节生成2-3个详细的图像/视频提示词:
+请为以下分镜细节生成一份专业的视觉执行方案和对应的图像/视频提示词:
 - 镜号: ${selectedShot.shot_number || 'N/A'}
 - 景别: ${selectedShot.shot_type || 'N/A'}
 - 画面内容: ${selectedShot.scene_content}
@@ -74,14 +114,14 @@ ${selectedShot.visual_style ? `- 画面风格参考: ${selectedShot.visual_style
 ${selectedShot.key_props ? `- 关键道具: ${selectedShot.key_props}` : ''}
 ${selectedShot.director_notes ? `- 导演注释: ${selectedShot.director_notes}` : ''}
 
-请确保每个提示词都非常详细，能够指导AI生成高质量的视觉内容。`;
+请严格按照系统指令的结构进行输出。`;
 
     const result = await callDeepSeekAPI(systemPromptImagePrompts, userPromptContent);
     if (result) {
       setGeneratedImagePrompts(result);
-      toast({ title: "提示词生成成功", description: "已为选中分镜生成提示词。" });
+      toast({ title: "提示词方案生成成功", description: "已为选中分镜生成详细视觉方案。" });
     } else {
-      toast({ title: "提示词生成失败", description: "未能从AI获取提示词。", variant: "destructive"});
+      toast({ title: "提示词方案生成失败", description: "未能从AI获取方案。", variant: "destructive"});
     }
     setIsLoadingImagePrompts(false);
   };
