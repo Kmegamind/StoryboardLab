@@ -56,7 +56,7 @@ const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              保存分镜到数据库 (待实现)
+              保存分镜到数据库
             </Button>
             <Button
               onClick={onGenerateFinalPrompts}
