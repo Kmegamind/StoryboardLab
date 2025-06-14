@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Tables } from '@/integrations/supabase/types';
-import { callAPIStream } from '@/utils/apiStreamUtils';
+import { callDeepSeekAPI } from '@/utils/apiUtils';
 
 type Shot = Tables<'structured_shots'>;
 
@@ -16,10 +16,8 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 
   const processWithDirectorAgent = async (
     currentScreenwriterOutput: string,
-    onChunk: (chunk: string) => void,
-    onStreamComplete?: () => void,
-  ) => {
-    if (!currentScreenwriterOutput) return;
+  ): Promise<string | null> => {
+    if (!currentScreenwriterOutput) return null;
     setIsLoadingDirector(true);
 
     const systemPromptDirector = `你是一位经验丰富的电影导演。你的任务是将剧本分解为一系列具体的镜头，并以JSON数组的格式输出。
@@ -37,31 +35,20 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 - "director_notes" (导演注释)
 
 请确保你的输出是一个结构良好、完整的JSON数组字符串。如果剧本无法分镜，请返回 {"error": "无法处理该剧本进行分镜。"}`;
-
-    await callAPIStream(
-      'deepseek-proxy',
-      {
-        systemPrompt: systemPromptDirector,
-        userPrompt: currentScreenwriterOutput,
-        stream: true,
-      },
-      onChunk,
-      (error) => {
-        console.error('导演 Agent 在流式处理中出错:', error);
-        toast({ title: "导演 Agent 处理失败", description: `与 Agent 通信时出错: ${error.message}`, variant: "destructive" });
-        setIsLoadingDirector(false);
-      },
-      () => {
-        if (onStreamComplete) {
-          onStreamComplete();
-        }
-        toast({
-          title: "导演 Agent 处理完成",
-          description: "已成功生成结构化分镜。",
-        });
-        setIsLoadingDirector(false);
-      }
-    );
+    
+    const result = await callDeepSeekAPI(systemPromptDirector, currentScreenwriterOutput);
+    
+    setIsLoadingDirector(false);
+    
+    if (result) {
+      toast({
+        title: "导演 Agent 处理完成",
+        description: "已成功生成结构化分镜。",
+      });
+    }
+    // If result is null, callDeepSeekAPI has already shown an error toast.
+    
+    return result;
   };
 
   const saveShotsToDatabase = async (currentDirectorOutput: string, projectId: string) => {

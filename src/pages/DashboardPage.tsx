@@ -83,44 +83,42 @@ const DashboardPage = () => {
     setDirectorOutput('');
     await updateProject({ screenwriter_output: screenwriterOutput, director_output_json: null });
 
-    let accumulatedOutput = "";
-    await processWithDirectorAgent(
-      screenwriterOutput,
-      (chunk) => {
-        accumulatedOutput += chunk;
-        setDirectorOutput(prev => prev + chunk);
-      },
-      async () => { // onStreamComplete
-        try {
-          const trimmed = accumulatedOutput.trim();
-          // Basic validation to ensure it's likely a JSON array
-          if (trimmed && (!trimmed.startsWith('[') || !trimmed.endsWith(']'))) {
-             // Attempt to find JSON array within markdown ```json ... ```
-            const match = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
-            if (match && match[1]) {
-              const extractedJson = match[1].trim();
-              JSON.parse(extractedJson); // Validate extracted JSON
-              accumulatedOutput = extractedJson;
-            } else {
-              throw new Error("输出不是有效的JSON数组，且未在Markdown代码块中找到。");
-            }
-          } else if (trimmed) {
-             JSON.parse(trimmed); // Validate
+    const result = await processWithDirectorAgent(screenwriterOutput);
+
+    if (result) {
+      let accumulatedOutput = result;
+      setDirectorOutput(accumulatedOutput);
+
+      try {
+        const trimmed = accumulatedOutput.trim();
+        // Basic validation to ensure it's likely a JSON array
+        if (trimmed && (!trimmed.startsWith('[') || !trimmed.endsWith(']'))) {
+           // Attempt to find JSON array within markdown ```json ... ```
+          const match = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
+          if (match && match[1]) {
+            const extractedJson = match[1].trim();
+            JSON.parse(extractedJson); // Validate extracted JSON
+            accumulatedOutput = extractedJson;
+            setDirectorOutput(accumulatedOutput); // Update UI with cleaned JSON
+          } else {
+            throw new Error("输出不是有效的JSON数组，且未在Markdown代码块中找到。");
           }
-          
-          await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
-        } catch (e: any) {
-          toast({
-            title: "警告：导演 Agent 输出内容格式有误",
-            description: "AI输出的可能不是标准JSON格式。已尝试修正，但请在保存前仔细检查并手动编辑。",
-            variant: "destructive",
-            duration: 9000,
-          });
-          // Still save the raw output for manual correction
-          await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
+        } else if (trimmed) {
+           JSON.parse(trimmed); // Validate
         }
+        
+        await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
+      } catch (e: any) {
+        toast({
+          title: "警告：导演 Agent 输出内容格式有误",
+          description: "AI输出的可能不是标准JSON格式。请在保存前仔细检查并手动编辑。",
+          variant: "destructive",
+          duration: 9000,
+        });
+        // Still save the raw output for manual correction
+        await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
       }
-    );
+    }
   };
 
   const handleSaveShots = async () => {
