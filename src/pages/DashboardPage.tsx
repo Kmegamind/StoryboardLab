@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -139,26 +138,7 @@ const DashboardPage = () => {
       </header>
 
       {/* API Key Card Removed */}
-      {/*
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>API 设置</CardTitle>
-          <CardDescription>请输入您的 DeepSeek API 密钥。请注意：此密钥仅存储在您的浏览器中，用于本次会话。为了安全，请勿在生产环境的前端代码中硬编码密钥。</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Input
-            type="password"
-            placeholder="输入您的 DeepSeek API Key"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="text-base"
-          />
-          <p className="text-xs text-muted-foreground mt-2">
-            推荐使用 Supabase Edge Functions 等后端方案管理 API 密钥以确保安全。
-          </p>
-        </CardContent>
-      </Card>
-      */}
+      {/* ... keep existing code (API Key Card commented out) ... */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <Card className="md:col-span-1">
@@ -203,12 +183,16 @@ const DashboardPage = () => {
               )}
               {screenwriterOutput ? (
                 <>
-                  <p className="text-muted-foreground mb-2">处理结果:</p>
-                  <Textarea value={screenwriterOutput} readOnly className="min-h-[100px] bg-muted/30" />
+                  <p className="text-muted-foreground mb-2">处理结果 (可编辑):</p>
+                  <Textarea 
+                    value={screenwriterOutput} 
+                    onChange={(e) => setScreenwriterOutput(e.target.value)}
+                    className="min-h-[100px] bg-muted/30" 
+                  />
                   <Button 
                     onClick={handleDirectorProcessing} 
                     className="mt-4 w-full"
-                    disabled={isLoadingDirector} // Removed !apiKey
+                    disabled={isLoadingDirector || !screenwriterOutput} 
                   >
                     {isLoadingDirector ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -238,12 +222,16 @@ const DashboardPage = () => {
               )}
               {directorOutput ? (
                 <>
-                  <p className="text-muted-foreground mb-2">处理结果:</p>
-                  <Textarea value={directorOutput} readOnly className="min-h-[100px] bg-muted/30" />
+                  <p className="text-muted-foreground mb-2">处理结果 (可编辑):</p>
+                  <Textarea 
+                    value={directorOutput} 
+                    onChange={(e) => setDirectorOutput(e.target.value)}
+                    className="min-h-[100px] bg-muted/30" 
+                  />
                   <Button 
                     onClick={handleGenerateFinalPrompts} 
                     className="mt-4 w-full"
-                    disabled={isLoadingFinalPrompts} // Removed !apiKey
+                    disabled={isLoadingFinalPrompts || !directorOutput}
                   >
                      {isLoadingFinalPrompts ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -265,7 +253,7 @@ const DashboardPage = () => {
         <CardHeader>
           <CardTitle className="text-2xl">最终输出：AI生图提示词系列</CardTitle>
           <CardDescription>
-            这里将展示根据您的创意和Agent处理结果生成的、可用于AI绘画工具的详细提示词。
+            这里将展示根据您的创意和Agent处理结果生成的、可用于AI绘画工具的详细提示词 (可编辑)。
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -276,7 +264,11 @@ const DashboardPage = () => {
             </div>
           )}
           {finalPrompts ? (
-            <Textarea value={finalPrompts} readOnly className="min-h-[150px] bg-muted/30 text-lg" />
+            <Textarea 
+              value={finalPrompts} 
+              onChange={(e) => setFinalPrompts(e.target.value)}
+              className="min-h-[150px] bg-muted/30 text-lg" 
+            />
           ) : (
             !isLoadingFinalPrompts && <p className="text-muted-foreground">等待所有Agent处理完成...</p>
           )}
