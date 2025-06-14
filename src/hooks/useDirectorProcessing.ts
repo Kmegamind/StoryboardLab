@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { callDeepSeekAPI } from '@/utils/apiUtils';
+import { callAPIStream } from '@/utils/apiStreamUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Tables } from '@/integrations/supabase/types';
@@ -35,16 +36,44 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 - "director_notes" (导演注释)
 
 请确保你的输出是一个结构良好、完整的JSON数组字符串。如果剧本无法分镜，请返回 {"error": "无法处理该剧本进行分镜。"}`;
-    const result = await callDeepSeekAPI(systemPromptDirector, currentScreenwriterOutput);
+    
+    let accumulatedOutput = "";
 
-    if (result) {
-      setDirectorOutput(result);
-      toast({
-        title: "导演 Agent 处理完成",
-        description: "已成功生成结构化分镜 (JSON格式)。",
-      });
-    }
-    setIsLoadingDirector(false);
+    await callAPIStream(
+      'deepseek-proxy',
+      { systemPrompt: systemPromptDirector, userPrompt: currentScreenwriterOutput },
+      (chunk) => {
+        accumulatedOutput += chunk;
+        setDirectorOutput(prev => prev + chunk);
+      },
+      (error) => {
+        toast({ title: "导演 Agent 处理失败", description: error.message, variant: "destructive" });
+        setIsLoadingDirector(false);
+      },
+      () => {
+        setIsLoadingDirector(false);
+        toast({
+          title: "导演 Agent 处理完成",
+          description: "已成功生成结构化分镜。",
+        });
+        
+        // Final validation of the output
+        try {
+            const trimmed = accumulatedOutput.trim();
+            if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) {
+                throw new Error("输出不是一个有效的 JSON 数组。");
+            }
+            JSON.parse(trimmed);
+        } catch(e) {
+            toast({
+                title: "警告：输出内容格式有误",
+                description: "生成的内容似乎不是有效的JSON数组格式。请在保存前检查并修正。",
+                variant: "destructive",
+                duration: 9000,
+            })
+        }
+      }
+    );
   };
 
   const saveShotsToDatabase = async (currentDirectorOutput: string) => {

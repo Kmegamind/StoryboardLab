@@ -40,7 +40,7 @@ serve(async (req: Request) => {
     }
     
     const { systemPrompt, userPrompt } = await req.json();
-    console.log('Received prompts:', { systemPrompt, userPrompt });
+    console.log('Received prompts for streaming...');
 
     const deepSeekResponse = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',
@@ -54,30 +54,29 @@ serve(async (req: Request) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        // Add any other parameters like temperature, max_tokens if needed
+        stream: true, // Enable streaming
       }),
     });
 
     console.log('DeepSeek API response status:', deepSeekResponse.status);
-    const deepSeekData = await deepSeekResponse.json();
 
     if (!deepSeekResponse.ok) {
-      console.error('DeepSeek API error:', deepSeekData);
-      // Relay the error structure from DeepSeek if possible, or a generic one
-      return new Response(JSON.stringify({ error: deepSeekData.error || 'Failed to fetch from DeepSeek API' }), {
+      const errorData = await deepSeekResponse.text();
+      console.error('DeepSeek API error:', errorData);
+      return new Response(JSON.stringify({ error: `Failed to fetch from DeepSeek API: ${errorData}` }), {
         status: deepSeekResponse.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
     
-    console.log('Successfully fetched data from DeepSeek API.');
-    // Assuming the useful content is in choices[0].message.content
-    const content = deepSeekData.choices && deepSeekData.choices[0] && deepSeekData.choices[0].message && deepSeekData.choices[0].message.content
-      ? deepSeekData.choices[0].message.content
-      : deepSeekData; // Fallback to returning the whole data if structure is unexpected
-
-    return new Response(JSON.stringify({ content }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.log('Piping stream from DeepSeek API.');
+    // Pipe the streaming response
+    return new Response(deepSeekResponse.body, {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/event-stream; charset=utf-8',
+      },
+      status: 200
     });
 
   } catch (error) {
@@ -88,4 +87,3 @@ serve(async (req: Request) => {
     });
   }
 });
-
