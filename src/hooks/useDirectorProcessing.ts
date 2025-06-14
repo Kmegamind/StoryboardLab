@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Tables } from '@/integrations/supabase/types';
+import { callAPIStream } from '@/utils/apiStreamUtils';
 
 type Shot = Tables<'structured_shots'>;
 
@@ -38,46 +38,30 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
 
 请确保你的输出是一个结构良好、完整的JSON数组字符串。如果剧本无法分镜，请返回 {"error": "无法处理该剧本进行分镜。"}`;
 
-    try {
-      const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
-        body: { 
-          systemPrompt: systemPromptDirector, 
-          userPrompt: currentScreenwriterOutput,
-          stream: true
-        },
-      });
-
-      if (error) throw error;
-      if (!data) throw new Error("未能获取流式响应。");
-
-      // The data from invoke for a stream is a Blob. We need to get its underlying ReadableStream.
-      const stream = (data as Blob).stream();
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          onChunk(chunk);
+    await callAPIStream(
+      'deepseek-proxy',
+      {
+        systemPrompt: systemPromptDirector,
+        userPrompt: currentScreenwriterOutput,
+        stream: true,
+      },
+      onChunk,
+      (error) => {
+        console.error('导演 Agent 在流式处理中出错:', error);
+        toast({ title: "导演 Agent 处理失败", description: `与 Agent 通信时出错: ${error.message}`, variant: "destructive" });
+        setIsLoadingDirector(false);
+      },
+      () => {
+        if (onStreamComplete) {
+          onStreamComplete();
         }
+        toast({
+          title: "导演 Agent 处理完成",
+          description: "已成功生成结构化分镜。",
+        });
+        setIsLoadingDirector(false);
       }
-      
-      if (onStreamComplete) {
-        onStreamComplete();
-      }
-      toast({
-        title: "导演 Agent 处理完成",
-        description: "已成功生成结构化分镜。",
-      });
-    } catch (error: any) {
-      console.error('导演 Agent 在流式处理中出错:', error);
-      toast({ title: "导演 Agent 处理失败", description: `与 Agent 通信时出错: ${error.message}`, variant: "destructive" });
-    } finally {
-      setIsLoadingDirector(false);
-    }
+    );
   };
 
   const saveShotsToDatabase = async (currentDirectorOutput: string, projectId: string) => {
