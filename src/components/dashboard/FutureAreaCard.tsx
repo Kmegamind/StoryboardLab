@@ -2,26 +2,32 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
+import { cn } from '@/lib/utils';
 
 type Shot = Tables<'structured_shots'>;
 
 interface FutureAreaCardProps {
   savedShots: Shot[];
   isLoadingSavedShots: boolean;
+  onSelectShot: (shot: Shot) => void;
+  selectedShotId?: string | null;
 }
 
 const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
   savedShots,
   isLoadingSavedShots,
+  onSelectShot,
+  selectedShotId,
 }) => {
   return (
     <Card className="mt-12">
       <CardHeader>
         <CardTitle className="text-2xl">已保存分镜列表</CardTitle>
         <CardDescription>
-          这里展示了您已保存到数据库的分镜。您可以选择一个分镜进行后续的 AI 生图或生视频操作 (功能规划中)。
+          这里展示了您已保存到数据库的分镜。请选择一个分镜以生成图像/视频的详细提示词。
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -38,21 +44,32 @@ const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
                 <TableHead className="w-[120px]">景别</TableHead>
                 <TableHead>画面内容</TableHead>
                 <TableHead className="w-[100px]">预估时长</TableHead>
-                {/* <TableHead className="w-[100px]">操作</TableHead> */}
+                <TableHead className="w-[120px] text-center">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {savedShots.map((shot) => (
-                <TableRow key={shot.id}>
+                <TableRow 
+                  key={shot.id}
+                  className={cn(shot.id === selectedShotId ? "bg-primary/10" : "")}
+                >
                   <TableCell>{shot.shot_number || 'N/A'}</TableCell>
                   <TableCell>{shot.shot_type || 'N/A'}</TableCell>
                   <TableCell className="max-w-xs truncate" title={shot.scene_content || undefined}>
                     {shot.scene_content || '无内容'}
                   </TableCell>
                   <TableCell>{shot.estimated_duration || 'N/A'}</TableCell>
-                  {/* <TableCell>
-                    <Button variant="outline" size="sm" disabled>选择</Button>
-                  </TableCell> */}
+                  <TableCell className="text-center">
+                    <Button 
+                      variant={shot.id === selectedShotId ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => onSelectShot(shot)}
+                      className="w-full"
+                    >
+                      {shot.id === selectedShotId ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
+                      {shot.id === selectedShotId ? '已选择' : '选择此分镜'}
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

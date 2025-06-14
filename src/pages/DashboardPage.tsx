@@ -5,6 +5,7 @@ import PlotInputCard from '@/components/dashboard/PlotInputCard';
 import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
 import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
+import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
 import { Tables } from '@/integrations/supabase/types';
 
 type Shot = Tables<'structured_shots'>;
@@ -13,27 +14,28 @@ const DashboardPage = () => {
   const [plot, setPlot] = useState<string>('');
   const [screenwriterOutput, setScreenwriterOutput] = useState<string>('');
   const [directorOutput, setDirectorOutput] = useState<string>('');
-  // finalPrompts is no longer used by FutureAreaCard in this new implementation
-  // const [finalPrompts, setFinalPrompts] = useState<string>(''); 
-
+  
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
   const [isLoadingDirector, setIsLoadingDirector] = useState<boolean>(false);
-  // isLoadingFinalPrompts is no longer directly used by FutureAreaCard for its primary display
-  // const [isLoadingFinalPrompts, setIsLoadingFinalPrompts] = useState<boolean>(false);
   const [isSavingShots, setIsSavingShots] = useState<boolean>(false);
 
   const [savedShots, setSavedShots] = useState<Shot[]>([]);
   const [isLoadingSavedShots, setIsLoadingSavedShots] = useState<boolean>(false);
 
+  // New states for selected shot and prompt generation
+  const [selectedShot, setSelectedShot] = useState<Shot | null>(null);
+  const [generatedImagePrompts, setGeneratedImagePrompts] = useState<string | null>(null);
+  const [isLoadingImagePrompts, setIsLoadingImagePrompts] = useState<boolean>(false);
+
   const fetchSavedShots = async () => {
     setIsLoadingSavedShots(true);
     setSavedShots([]); // Clear previous shots
+    // Reset selected shot when refetching
+    setSelectedShot(null);
+    setGeneratedImagePrompts(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // toast({ title: "提示", description: "请先登录以查看已保存的分镜。", variant: "default"});
-        // Not showing toast here as it might be too intrusive on page load if user is not logged in.
-        // The FutureAreaCard will show a relevant message.
         setIsLoadingSavedShots(false);
         return;
       }
@@ -125,7 +127,8 @@ const DashboardPage = () => {
     setIsLoadingScreenwriter(true);
     setScreenwriterOutput('');
     setDirectorOutput(''); 
-    // setFinalPrompts('');  
+    setSelectedShot(null);
+    setGeneratedImagePrompts(null);
 
     const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
@@ -144,8 +147,9 @@ const DashboardPage = () => {
     if (!screenwriterOutput) return;
     setIsLoadingDirector(true);
     setDirectorOutput('');
-    // setFinalPrompts(''); 
-
+    setSelectedShot(null);
+    setGeneratedImagePrompts(null);
+    // ... rest of the function
     const systemPromptDirector = `你是一位经验丰富的电影导演和AI提示词工程师。你将收到一份由编剧撰写的初步剧本。你的任务是：
 1.  仔细阅读和理解剧本内容。
 2.  将剧本详细分解为一系列具体的镜头。
@@ -175,18 +179,6 @@ const DashboardPage = () => {
     "visual_style": "《银翼杀手2049》风格，冷色调，高对比度",
     "key_props": "飞行车, 全息广告牌",
     "director_notes": "营造神秘和广阔的都市氛围，主角显得渺小。"
-  },
-  {
-    "shot_number": "2",
-    "shot_type": "近景",
-    "scene_content": "主角（李明）坐在飞行车后座，面色凝重，看着窗外的雨景。",
-    "dialogue": "李明 (内心独白): ‘又回到这座不夜城了...’",
-    "estimated_duration": "3秒",
-    "camera_movement": "固定镜头",
-    "sound_music": "延续之前的电子音乐，加入微弱的心跳声",
-    "visual_style": "同上，强调主角面部细节",
-    "key_props": "无",
-    "director_notes": "突出主角的疲惫和内心的不平静。"
   }
 ]
 \`\`\`
@@ -204,10 +196,11 @@ const DashboardPage = () => {
     setIsLoadingDirector(false);
   };
 
-  const handleGenerateFinalPrompts = async () => {
+  const handleDirectorOutputCardGeneratePrompts = async () => {
+    // This is the button on DirectorOutputCard. Keep its existing behavior.
     toast({
-        title: "功能调整中",
-        description: "此功能将调整为针对数据库中选定的单个分镜生成提示词。",
+        title: "功能提示",
+        description: "此按钮用于处理导演Agent的直接输出。若要为已保存的单个分镜生成提示词，请先在下方列表中选择分镜。",
         variant: "default"
     });
   };
@@ -294,6 +287,60 @@ const DashboardPage = () => {
     }
   };
 
+  // New handler for selecting a shot from FutureAreaCard
+  const handleSelectShot = (shot: Shot) => {
+    setSelectedShot(shot);
+    setGeneratedImagePrompts(null); // Clear previous prompts when a new shot is selected
+    toast({
+      title: "分镜已选择",
+      description: `已选择镜号: ${shot.shot_number || 'N/A'}. 现在可以为其生成图像提示词。`,
+    });
+  };
+
+  // New handler for generating prompts for the selected shot
+  const handleGeneratePromptsForSelectedShot = async () => {
+    if (!selectedShot) {
+      toast({ title: "未选择分镜", description: "请先从下方列表中选择一个分镜。", variant: "destructive" });
+      return;
+    }
+    setIsLoadingImagePrompts(true);
+    setGeneratedImagePrompts(null);
+
+    const systemPromptImagePrompts = "你是一位AI提示词工程师，专门为文生图或文生视频模型（如DALL-E, Midjourney, Stable Diffusion, Sora）创作高质量的视觉提示词。根据用户提供的分镜细节，你的任务是生成2-3个独特且富有想象力的详细提示词。每个提示词应独立成段，包含场景、主体、动作、构图、光线、色彩、氛围、艺术风格等关键视觉元素。请确保提示词具有强烈的画面感和可执行性。";
+    
+    const userPromptContent = `
+请为以下分镜细节生成2-3个详细的图像/视频提示词:
+- 镜号: ${selectedShot.shot_number || 'N/A'}
+- 景别: ${selectedShot.shot_type || 'N/A'}
+- 画面内容: ${selectedShot.scene_content}
+${selectedShot.dialogue && selectedShot.dialogue !== "无" ? `- 对白/潜台词: ${selectedShot.dialogue}` : ''}
+${selectedShot.camera_movement ? `- 运镜方式: ${selectedShot.camera_movement}` : ''}
+${selectedShot.sound_music ? `- 音效/音乐参考: ${selectedShot.sound_music}` : ''}
+${selectedShot.visual_style ? `- 画面风格参考: ${selectedShot.visual_style}` : ''}
+${selectedShot.key_props ? `- 关键道具: ${selectedShot.key_props}` : ''}
+${selectedShot.director_notes ? `- 导演注释: ${selectedShot.director_notes}` : ''}
+
+请确保每个提示词都非常详细，能够指导AI生成高质量的视觉内容。
+`;
+
+    const result = await callDeepSeekAPI(systemPromptImagePrompts, userPromptContent);
+
+    if (result) {
+      setGeneratedImagePrompts(result);
+      toast({
+        title: "提示词生成成功",
+        description: "已为选中分镜生成图像/视频提示词。",
+      });
+    } else {
+      toast({
+        title: "提示词生成失败",
+        description: "未能从AI获取提示词，请稍后重试。",
+        variant: "destructive"
+      });
+    }
+    setIsLoadingImagePrompts(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
       <header className="mb-12 text-center">
@@ -323,10 +370,10 @@ const DashboardPage = () => {
             directorOutput={directorOutput}
             setDirectorOutput={setDirectorOutput}
             onSaveShotsToDatabase={handleSaveShotsToDatabase}
-            onGenerateFinalPrompts={handleGenerateFinalPrompts}
+            onGenerateFinalPrompts={handleDirectorOutputCardGeneratePrompts} // Keep existing handler for this button
             isLoadingDirector={isLoadingDirector}
             isSavingShots={isSavingShots}
-            isLoadingFinalPrompts={false} // isLoadingFinalPrompts from state no longer used here
+            isLoadingFinalPrompts={false} 
           />
         </div>
       </div>
@@ -334,7 +381,19 @@ const DashboardPage = () => {
       <FutureAreaCard
         savedShots={savedShots}
         isLoadingSavedShots={isLoadingSavedShots}
+        onSelectShot={handleSelectShot} // Pass handler
+        selectedShotId={selectedShot?.id} // Pass selected shot ID
       />
+
+      {/* New card for selected shot actions */}
+      {selectedShot && (
+        <SelectedShotActionsCard
+          selectedShot={selectedShot}
+          onGeneratePrompts={handleGeneratePromptsForSelectedShot}
+          isLoadingPrompts={isLoadingImagePrompts}
+          generatedPrompts={generatedImagePrompts}
+        />
+      )}
     </div>
   );
 };
