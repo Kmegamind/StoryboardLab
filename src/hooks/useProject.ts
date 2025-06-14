@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from '@/components/ui/use-toast';
 
 export type Project = Tables<'projects'>;
@@ -32,9 +32,10 @@ export const useProject = () => {
             if (projects && projects.length > 0) {
                 setProject(projects[0]);
             } else {
+                const newProjectData: TablesInsert<'projects'> = { user_id: user.id, title: `新项目 ${new Date().toLocaleDateString()}` };
                 const { data: newProject, error: createError } = await supabase
                     .from('projects')
-                    .insert({ user_id: user.id, title: `新项目 ${new Date().toLocaleDateString()}` })
+                    .insert(newProjectData)
                     .select()
                     .single();
                 if (createError) throw createError;
@@ -48,7 +49,7 @@ export const useProject = () => {
         }
     }, []);
 
-    const updateProject = useCallback(async (updates: Partial<Project>) => {
+    const updateProject = useCallback(async (updates: Partial<TablesUpdate<'projects'>>) => {
         if (!project) {
             toast({ title: '更新失败', description: '没有选中的项目。', variant: 'destructive' });
             return null;
