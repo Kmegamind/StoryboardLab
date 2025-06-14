@@ -43,10 +43,12 @@
     --brand-cyan: 190 80% 55%;
   }
 
-  /* Ensure dark mode is applied by default if not using theme switcher */
+  /*
+  The line below was causing the build error and has been removed.
   html {
     @apply dark;
   }
+  */
 }
 
 @layer base {
