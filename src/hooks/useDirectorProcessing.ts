@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -45,7 +44,6 @@ export const useDirectorProcessing = (props?: DirectorProcessingHookProps) => {
           userPrompt: currentScreenwriterOutput,
           stream: true
         },
-        responseType: 'stream',
       });
 
       if (error) throw error;
