@@ -1,7 +1,6 @@
 
-import 'xhr_polyfill'; // Recommended for Deno Deploy
+import "https://deno.land/x/xhr@0.1.0/mod.ts"; // Recommended for Deno Deploy, using URL import
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'; // Ensure using a recent, stable version
-import { modelos } from "https://deno.land/x/modelos@v0.0.2/mod.ts"; // If this is used, ensure it's relevant or remove
 
 // Define CORS headers. '*' is generally fine for development,
 // but for production, you might want to restrict it to your app's domain.
@@ -89,3 +88,4 @@ serve(async (req: Request) => {
     });
   }
 });
+
