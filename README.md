@@ -1,73 +1,56 @@
-# Welcome to your Lovable project
 
-## Project info
+# AI 影视前期制作工具 (AI Pre-production Tool)
 
-**URL**: https://lovable.dev/projects/6fd7f156-1a11-4d0a-8104-dec0b2fc48b5
+欢迎来到您的 AI 影视前期制作工作台！这是一个利用大型语言模型（LLM）赋能创意，将一个简单的灵感转化为专业、可执行的视觉生产方案的 Web 应用。
 
-## How can I edit this code?
+## ✨ 项目简介 (Project Overview)
 
-There are several ways of editing your application.
+本工具旨在简化和加速影视、动画、游戏等内容的早期创意和规划阶段。用户只需输入一个故事梗概或创意点，AI Agent 链条便会自动完成从剧本初稿、导演分镜表到具体视觉方案和生成提示词（Prompts）的全过程。
 
-**Use Lovable**
+## 🚀 主要功能 (Key Features)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6fd7f156-1a11-4d0a-8104-dec0b2fc48b5) and start prompting.
+-   **AI Agent 智能链条 (AI Agent Chain)**: 包含编剧、导演、摄像、美术指导四大核心 Agent，各司其职，协同工作。
+-   **定制化内容生成 (Customizable Generation)**:
+    -   **编剧 Agent**: 可选择剧本类型（科幻、喜剧等）和内容形式（真人电影、动画等）。
+    -   **导演 Agent**: 可定义导演风格和叙事节奏，生成结构化分镜表。
+    -   **摄像 Agent**: 可指定镜头类型、光照风格和运镜偏好。
+    -   **美术指导 Agent**: 可设定整体艺术风格、核心色板和时代背景。
+-   **结构化分镜管理 (Structured Shot Management)**: 在工作台清晰地查看和管理由 AI 生成的所有分镜。
+-   **专业级视觉方案生成 (Professional Visual Plan Generation)**:
+    -   为选定的分镜一键生成包含图像分析、执行方案、构图设计、调色板等在内的完整视觉方案。
+    -   自动产出适配 Midjourney, Sora 等 AI 模型的 **中英双语** 详细提示词（Prompts）。
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ 技术栈 (Tech Stack)
 
-**Use your preferred IDE**
+-   **前端 (Frontend)**: React, Vite, TypeScript
+-   **UI 组件库 (UI Library)**: shadcn/ui
+-   **样式 (Styling)**: Tailwind CSS
+-   **后端与 AI (Backend & AI)**:
+    -   Supabase (数据库与后端服务)
+    -   DeepSeek API (核心语言模型)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏃‍♂️ 如何开始 (Getting Started)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1.  **克隆项目 (Clone the repo)**
+    ```sh
+    git clone <YOUR_GIT_URL>
+    ```
+2.  **安装依赖 (Install dependencies)**
+    ```sh
+    npm install
+    ```
+3.  **配置环境变量 (Configure environment variables)**
+    在项目根目录创建 `.env.local` 文件，并添加 Supabase 和 DeepSeek 的相关密钥。
+    ```
+    VITE_SUPABASE_URL=YOUR_SUPABASE_URL
+    VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+    VITE_DEEPSEEK_API_KEY=YOUR_DEEPSEEK_API_KEY
+    ```
+4.  **运行开发服务器 (Run the dev server)**
+    ```sh
+    npm run dev
+    ```
 
-Follow these steps:
+---
+*This project was built with [Lovable](https://lovable.dev).*
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6fd7f156-1a11-4d0a-8104-dec0b2fc48b5) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
