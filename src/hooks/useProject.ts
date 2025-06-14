@@ -48,7 +48,7 @@ export const useProject = () => {
                 const newProjectData: ProjectInsert = { user_id: user.id, title: `新项目 ${new Date().toLocaleDateString()}` };
                 const { data: newProject, error: createError } = await (supabase
                     .from('projects') as any) // Using 'as any' to bypass type issue
-                    .insert(newProjectData)
+                    .insert([newProjectData])
                     .select()
                     .single();
                 if (createError) throw createError;
@@ -81,7 +81,8 @@ export const useProject = () => {
             toast({ title: '项目已保存' });
             return updatedProject;
 
-        } catch (error: any) {
+        } catch (error: any)
+        {
             toast({ title: '项目更新失败', description: error.message, variant: 'destructive' });
             return null;
         }
