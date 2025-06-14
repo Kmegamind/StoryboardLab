@@ -79,14 +79,26 @@ const DashboardPage = () => {
     setIsLoadingScreenwriter(true);
     setScreenwriterOutput('');
 
-    const systemPromptScreenwriter = "你是一位专业的电影编剧。请根据用户提供的故事/情节，生成一份详细的剧本概要，包括主要角色介绍、故事大纲、开端、发展、高潮和结局。请确保内容结构清晰，引人入胜。";
+    const systemPromptScreenwriter = `你是一位专业的电影编剧和AI提示词工程师。请根据用户提供的故事/情节，将其详细分解为一系列镜头。对于每个镜头，请提供以下信息，并尽量使用清晰的结构化文本格式输出，例如Markdown表格或编号列表：
+- **镜号**: (例如：1, 2, 3...)
+- **景别**: (例如：全景, 中景, 近景, 特写, 大特写, 远景)
+- **画面内容**: (详细描述画面中看到的内容，包括环境、角色、角色动作与表情、光线氛围等)
+- **台词**: (如果该镜头有台词，请注明说话人)
+- **预估时长**: (例如：3秒, 5-7秒)
+- **运镜方式**: (例如：固定镜头, 推镜头, 拉镜头, 摇镜头, 跟随镜头, 升降镜头, 旋转镜头, 主观镜头)
+- **音效/音乐**: (关键的声音元素，环境音，或背景音乐的风格和情绪描述)
+- **画面风格参考**: (例如：电影《银翼杀手》的霓虹赛博朋克风格, 宫崎骏动画的明亮温暖童话风格, 黑白胶片质感的悬疑风格)
+- **关键道具**: (镜头中出现的对情节或视觉重要的道具)
+- **情绪识别点/导演注释**: (例如：角色A惊讶, 整体氛围紧张, 此处特写角色B的眼神以表达其内心挣扎)
+
+在镜头列表之前，你可以选择性地提供一个总体的故事简介、主要角色介绍和故事大纲。请确保每个镜头信息尽可能完整、具体，结构清晰，方便后续生成图像。`;
     const result = await callDeepSeekAPI(systemPromptScreenwriter, plot);
 
     if (result) {
       setScreenwriterOutput(result);
       toast({
         title: "编剧 Agent 处理完成",
-        description: "已成功生成剧本概要。",
+        description: "已成功生成初步的结构化剧本概要。",
       });
     }
     setIsLoadingScreenwriter(false);
@@ -97,14 +109,14 @@ const DashboardPage = () => {
     setIsLoadingDirector(true);
     setDirectorOutput('');
 
-    const systemPromptDirector = "你是一位经验丰富的电影导演。用户将提供一份剧本概要。请根据这份概要，提出分镜建议、视觉风格参考（例如，参考哪些电影的风格）、以及关键场景的拍摄要点和节奏控制建议。";
+    const systemPromptDirector = "你是一位经验丰富的电影导演。用户将提供一份由编剧 Agent 处理过的结构化剧本（可能包含镜号、景别、画面内容、台词等信息）。请仔细审阅这份剧本，并针对每个或重要的镜头，补充或优化以下内容：\n- **分镜建议细化**: 基于编剧的描述，给出更具体的分镜构图想法，例如视觉焦点、角色位置关系、前景/背景元素。\n- **视觉风格确认与延展**: 对编剧提出的风格参考进行确认，或提出更具体的视觉风格元素（色彩、光影、质感）。如果编剧未提供，请给出你的建议。\n- **拍摄要点**: 针对关键场景，指出拍摄时的注意事项，例如特殊摄影技巧、灯光布置要点。\n- **节奏控制建议**: 对场景或连续镜头的节奏提出建议，例如快切、慢节奏、镜头时长等。\n- **情绪与氛围强化**: 如何通过视觉和听觉元素进一步强化场景所需的情绪和氛围。\n请以清晰、有条理的方式输出你的导演意见，可以直接在编剧提供的结构上进行补充或评论。";
     const result = await callDeepSeekAPI(systemPromptDirector, screenwriterOutput);
 
     if (result) {
       setDirectorOutput(result);
       toast({
         title: "导演 Agent 处理完成",
-        description: "已成功生成分镜和视觉建议。",
+        description: "已成功生成导演处理意见。",
       });
     }
     setIsLoadingDirector(false);
@@ -115,7 +127,7 @@ const DashboardPage = () => {
     setIsLoadingFinalPrompts(true);
     setFinalPrompts('');
 
-    const systemPromptFinal = "你是一个 AI 提示词工程师。用户将提供导演处理后的分镜和视觉建议。请根据这些信息，生成一系列详细的、可以直接用于 AI 图像生成工具（如 Midjourney, Stable Diffusion）的提示词 (prompts)。每个提示词应该专注于一个具体的镜头或场景，并包含场景描述、人物动作、情绪氛围、画面构图、光线、色彩、以及可能的艺术风格。请确保提示词具体、丰富，能够引导 AI 生成高质量、符合要求的图像。请输出多个提示词，每个提示词占一行。";
+    const systemPromptFinal = "你是一个顶级的 AI 图像生成提示词工程师。用户将提供一份经过编剧和导演处理的详细电影场景描述，这份描述可能已经包含了镜号、景别、详细画面内容、角色动作表情、台词、运镜方式、音效音乐氛围、画面风格参考、关键道具以及导演的关键注释和情绪识别点。\n你的任务是：根据这些极其详尽的输入，为每一个镜头或关键画面生成一个或多个可以直接用于先进 AI 图像生成工具（如 Midjourney v6+, DALL-E 3, Stable Diffusion XL/Flux）的、高质量的英文提示词 (prompts)。\n**提示词要求**：\n1.  **高度具体**：包含场景（室内/室外，具体地点）、时间（白天/夜晚/黄昏）、角色（外貌特征、服装、姿势、表情、情绪）、物体、构图（景别如 close-up, medium shot, full shot, establishing shot；摄像机角度如 low angle, high angle, eye-level）、光照（如 cinematic lighting, soft light, rim lighting, volumetric lighting）、色彩（如 vibrant colors, monochrome, pastel palette）、艺术风格（如 photorealistic, hyperrealistic, anime style, impressionistic, cyberpunk, fantasy art, specific artist's style like Greg Rutkowski or Alphonse Mucha）、以及任何能增强画面效果的关键词（如 8K, ultra-detailed, sharp focus, dramatic atmosphere）。\n2.  **英文输出**：所有提示词必须是英文。\n3.  **结构化**：如果输入是分镜头的，请为每个镜头生成对应的提示词，并清晰标注对应的镜号或场景描述，以便用户对应。\n4.  **参数化（可选）**: 可以适当使用 Midjourney/SD 的参数，如 `--ar` (aspect ratio), `--style raw`, `--stylize`, `--chaos`, `--v 6.0` 等，如果这些参数有助于实现导演的意图。\n5.  **避免空泛**: 不要使用过于主观或AI难以理解的描述，力求画面元素的可实现性。\n6.  **多个提示词**: 对于复杂的场景，可以生成多个略有差异的提示词，给用户更多选择。\n请直接输出提示词列表。";
     const result = await callDeepSeekAPI(systemPromptFinal, directorOutput);
     
     if (result) {
@@ -172,7 +184,7 @@ const DashboardPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>2. 编剧 Agent 处理</CardTitle>
-              <CardDescription>角色设定、故事大纲、对话脚本等。</CardDescription>
+              <CardDescription>角色设定、故事大纲、对话脚本等。AI将尝试按结构化格式输出。</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoadingScreenwriter && !screenwriterOutput && (
