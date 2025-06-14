@@ -1,5 +1,5 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
 import PlotInputCard from '@/components/dashboard/PlotInputCard';
 import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
@@ -12,9 +12,12 @@ import { useProject } from '@/hooks/useProject';
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
 import { useDirectorProcessing } from '@/hooks/useDirectorProcessing';
 import { useShotManagement } from '@/hooks/useShotManagement';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
+  const navigate = useNavigate();
 
   const [plot, setPlot] = useState('');
   const [screenwriterOutput, setScreenwriterOutput] = useState('');
@@ -127,6 +130,15 @@ const DashboardPage = () => {
     await updateProject({ status: 'completed' });
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        toast({ title: '登出失败', description: error.message, variant: 'destructive' });
+    } else {
+        navigate('/auth');
+    }
+  };
+
   if (isLoadingProject) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -153,6 +165,7 @@ const DashboardPage = () => {
         <p className="text-xl text-muted-foreground mt-2">
           当前项目: <span className="font-semibold">{project.title}</span> (状态: {project.status})
         </p>
+        <Button onClick={handleLogout} variant="outline" className="mt-4">登出</Button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">

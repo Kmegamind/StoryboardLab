@@ -12,6 +12,8 @@ import CinematographerAgentPage from "./pages/agents/CinematographerAgentPage";
 import ArtDirectorAgentPage from "./pages/agents/ArtDirectorAgentPage";
 import Navbar from "./components/Navbar"; // Import Navbar
 import Footer from "./components/Footer"; // Import Footer
+import AuthPage from "./pages/AuthPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -30,11 +32,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppLayout><Index /></AppLayout>} />
-          <Route path="/agents/screenwriter" element={<AppLayout><ScreenwriterAgentPage /></AppLayout>} />
-          <Route path="/agents/director" element={<AppLayout><DirectorAgentPage /></AppLayout>} />
-          <Route path="/agents/cinematographer" element={<AppLayout><CinematographerAgentPage /></AppLayout>} />
-          <Route path="/agents/art-director" element={<AppLayout><ArtDirectorAgentPage /></AppLayout>} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/" element={<ProtectedRoute><AppLayout><Index /></AppLayout></ProtectedRoute>} />
+          <Route path="/agents/screenwriter" element={<ProtectedRoute><AppLayout><ScreenwriterAgentPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/agents/director" element={<ProtectedRoute><AppLayout><DirectorAgentPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/agents/cinematographer" element={<ProtectedRoute><AppLayout><CinematographerAgentPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/agents/art-director" element={<ProtectedRoute><AppLayout><ArtDirectorAgentPage /></AppLayout></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
         </Routes>
