@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,9 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+        'brand-purple': 'hsl(var(--brand-purple))',
+        'brand-pink': 'hsl(var(--brand-pink))',
+        'brand-cyan': 'hsl(var(--brand-cyan))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -63,6 +67,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+      transitionTimingFunction: {
+        'jelly': 'cubic-bezier(0.3, 0.7, 0.4, 1.5)',
+      },
 			boxShadow: {
         'futuristic-inset': 'inset 4px 4px 8px hsl(var(--primary-dark)), inset -4px -4px 8px hsl(var(--primary-light))',
       },

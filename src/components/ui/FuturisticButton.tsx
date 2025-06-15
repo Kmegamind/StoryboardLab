@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -35,7 +34,7 @@ export interface FuturisticButtonProps
 const FuturisticButton = React.forwardRef<HTMLButtonElement, FuturisticButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    const frontClasses = "flex items-center justify-center relative w-full h-full px-8 rounded-lg text-lg font-semibold will-change-transform transition-all duration-500 ease-in-out -translate-y-1 group-hover:-translate-y-1.5 group-active:-translate-y-0.5"
+    const frontClasses = "flex items-center justify-center relative w-full h-full px-8 rounded-lg text-lg font-semibold will-change-transform transition-all duration-500 ease-jelly -translate-y-1 group-hover:-translate-y-1.5 group-active:-translate-y-0.5"
     
     return (
       <Comp
@@ -43,7 +42,7 @@ const FuturisticButton = React.forwardRef<HTMLButtonElement, FuturisticButtonPro
         ref={ref}
         {...props}
       >
-        <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-black/25 will-change-transform transition-all duration-500 ease-in-out translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
+        <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-black/25 will-change-transform transition-all duration-500 ease-jelly translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
         <span className={cn(
           "absolute top-0 left-0 w-full h-full rounded-lg",
           variant === 'outline' ? "bg-background/80 border-2 border-primary" : "bg-gradient-to-l from-primary/50 via-primary/80 to-primary/50"

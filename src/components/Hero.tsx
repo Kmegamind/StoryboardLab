@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FuturisticButton } from '@/components/ui/FuturisticButton'; 
 import { PlayCircle } from 'lucide-react';
@@ -5,9 +6,9 @@ import { PlayCircle } from 'lucide-react';
 const Hero = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Gradient Animation - This was removed to fix a build error. Can be re-added with standard CSS/Tailwind. */}
+      {/* Background Gradient Animation */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+        <div className="relative w-full h-full bg-gradient-to-br from-brand-purple via-brand-pink to-brand-cyan grainy-noise"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
