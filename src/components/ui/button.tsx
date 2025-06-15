@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -42,6 +43,51 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+
+    if (variant === "default" || variant === "outline") {
+      const jellyContainerSizeClasses =
+        size === 'lg' ? "h-14" :
+        size === 'sm' ? "h-9" :
+        size === 'icon' ? "h-11 w-11" :
+        "h-11";
+
+      const frontPaddingClasses =
+        size === 'lg' ? "px-8" :
+        size === 'sm' ? "px-3" :
+        size === 'icon' ? "" :
+        "px-4";
+
+      const jellyBaseClasses = "relative p-0 border-none bg-transparent cursor-pointer group drop-shadow-futuristic-glow disabled:cursor-not-allowed disabled:opacity-50";
+
+      const frontClasses = cn(
+        "flex items-center justify-center gap-2 relative w-full h-full rounded-lg text-sm font-medium will-change-transform transition-all duration-500 ease-jelly -translate-y-1 group-hover:-translate-y-1.5 group-active:-translate-y-0.5",
+        frontPaddingClasses,
+        "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+      );
+
+      return (
+        <Comp
+          className={cn(jellyBaseClasses, jellyContainerSizeClasses, className)}
+          ref={ref}
+          {...props}
+        >
+          <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-black/25 will-change-transform transition-all duration-500 ease-jelly translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
+          <span className={cn(
+            "absolute top-0 left-0 w-full h-full rounded-lg",
+            variant === 'outline' ? "bg-background/80 border-2 border-primary" : "bg-gradient-to-l from-primary/50 via-primary/80 to-primary/50"
+          )} />
+          <span className={cn(
+            frontClasses,
+            variant === 'outline'
+              ? "bg-transparent text-primary shadow-none"
+              : "bg-primary text-primary-foreground shadow-futuristic-inset"
+          )}>
+            {props.children}
+          </span>
+        </Comp>
+      )
+    }
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}

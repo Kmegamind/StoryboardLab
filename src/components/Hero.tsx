@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FuturisticButton } from '@/components/ui/FuturisticButton'; 
+import { Button } from '@/components/ui/button'; 
 import { PlayCircle } from 'lucide-react';
 
 const Hero = () => {
@@ -24,13 +24,13 @@ const Hero = () => {
           让每个故事都能绽放视觉生命力 ✨
         </p>
         <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-          <FuturisticButton size="lg" className="px-8 py-6">
+          <Button size="lg">
             开始创作
-          </FuturisticButton>
-          <FuturisticButton variant="outline" size="lg" className="px-8 py-6">
+          </Button>
+          <Button variant="outline" size="lg">
             <PlayCircle className="mr-2 h-5 w-5" />
             观看演示
-          </FuturisticButton>
+          </Button>
         </div>
         <p className="mt-12 text-sm text-muted-foreground">
           您可以上传一张图片作为背景，让页面更具吸引力。
