@@ -1,3 +1,4 @@
+
 {
   "navbar": {
     "agents": "Agents",
@@ -31,8 +32,7 @@
     "subtitle": "革命性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。",
     "tagline": "让每个故事都能绽放视觉生命力",
     "cta": {
-      "start": "开始创作",
-      "watchDemo": "观看演示"
+      "start": "开始创作"
     },
     "imageUploadHint": "您可以上传一张图片作为背景，让页面更具吸引力。"
   },

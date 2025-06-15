@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button'; 
-import { PlayCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -27,13 +26,9 @@ const Hero = () => {
         <p className="text-2xl md:text-3xl font-semibold text-primary mb-12">
           {t('hero.tagline', '让每个故事都能绽放视觉生命力')} ✨
         </p>
-        <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <div className="flex justify-center items-center">
           <Button size="lg" asChild>
             <Link to="/dashboard">{t('hero.cta.start', '开始创作')}</Link>
-          </Button>
-          <Button variant="outline" size="lg">
-            <PlayCircle className="mr-2 h-5 w-5" />
-            {t('hero.cta.watchDemo', '观看演示')}
           </Button>
         </div>
         <p className="mt-12 text-sm text-muted-foreground">

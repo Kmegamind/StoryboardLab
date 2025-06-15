@@ -1,3 +1,4 @@
+
 {
   "navbar": {
     "agents": "Agents",
@@ -31,8 +32,7 @@
     "subtitle": "A revolutionary AI filmmaking platform that automatically converts your story scripts into executable AI generation instructions.",
     "tagline": "Bringing every story to visual life",
     "cta": {
-      "start": "Start Creating",
-      "watchDemo": "Watch Demo"
+      "start": "Start Creating"
     },
     "imageUploadHint": "You can upload an image as a background to make the page more attractive."
   },
