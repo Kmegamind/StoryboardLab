@@ -143,7 +143,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-        toast({ title: '登出失败', description: error.message, variant: 'destructive' });
+        toast({ title: t('auth.logoutError'), description: error.message, variant: 'destructive' });
     } else {
         navigate('/auth');
     }

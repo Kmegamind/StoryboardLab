@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,27 +23,29 @@ const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
   isSavingShots,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>3. 导演 Agent 处理 (结构化分镜)</CardTitle>
-        <CardDescription>AI将把剧本分解为结构化的分镜列表（JSON格式），处理完成后可保存。</CardDescription>
+        <CardTitle>{t('dashboardCards.directorOutput.title')}</CardTitle>
+        <CardDescription>{t('dashboardCards.directorOutput.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoadingDirector && !directorOutput && (
           <div className="flex items-center justify-center text-muted-foreground">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            处理中...
+            {t('dashboardCards.directorOutput.processing')}
           </div>
         )}
         {directorOutput ? (
           <>
-            <p className="text-muted-foreground mb-2">结构化分镜列表 (JSON格式, 可编辑):</p>
+            <p className="text-muted-foreground mb-2">{t('dashboardCards.directorOutput.label')}</p>
             <Textarea
               value={directorOutput}
               onChange={(e) => setDirectorOutput(e.target.value)}
               className="min-h-[150px] bg-muted/30 font-mono text-sm"
-              placeholder="导演 Agent 将在此处输出JSON格式的结构化分镜列表..."
+              placeholder={t('dashboardCards.directorOutput.placeholder')}
               disabled={disabled}
             />
             <Button
@@ -55,11 +58,11 @@ const DirectorOutputCard: React.FC<DirectorOutputCardProps> = ({
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              保存分镜到数据库
+              {t('dashboardCards.directorOutput.button')}
             </Button>
           </>
         ) : (
-          !isLoadingDirector && <p className="text-muted-foreground">等待编剧 Agent 完成处理，或导演 Agent 生成结构化分镜...</p>
+          !isLoadingDirector && <p className="text-muted-foreground">{t('dashboardCards.directorOutput.waiting')}</p>
         )}
       </CardContent>
     </Card>

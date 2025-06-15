@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,22 +23,24 @@ const ScreenwriterOutputCard: React.FC<ScreenwriterOutputCardProps> = ({
   isLoadingDirector,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>2. 编剧 Agent 处理</CardTitle>
-        <CardDescription>AI将根据您的情节生成初步的叙事性剧本。</CardDescription>
+        <CardTitle>{t('dashboardCards.screenwriterOutput.title')}</CardTitle>
+        <CardDescription>{t('dashboardCards.screenwriterOutput.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoadingScreenwriter && !screenwriterOutput && (
           <div className="flex items-center justify-center text-muted-foreground">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            处理中...
+            {t('dashboardCards.screenwriterOutput.processing')}
           </div>
         )}
         {screenwriterOutput ? (
           <>
-            <p className="text-muted-foreground mb-2">初步剧本 (可编辑):</p>
+            <p className="text-muted-foreground mb-2">{t('dashboardCards.screenwriterOutput.label')}</p>
             <Textarea
               value={screenwriterOutput}
               onChange={(e) => setScreenwriterOutput(e.target.value)}
@@ -54,11 +57,11 @@ const ScreenwriterOutputCard: React.FC<ScreenwriterOutputCardProps> = ({
               ) : (
                 <ArrowRight className="mr-2 h-4 w-4" />
               )}
-              移交导演 Agent (生成结构化分镜)
+              {t('dashboardCards.screenwriterOutput.button')}
             </Button>
           </>
         ) : (
-          !isLoadingScreenwriter && <p className="text-muted-foreground">等待主要情节输入并启动处理...</p>
+          !isLoadingScreenwriter && <p className="text-muted-foreground">{t('dashboardCards.screenwriterOutput.waiting')}</p>
         )}
       </CardContent>
     </Card>

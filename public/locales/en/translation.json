@@ -79,6 +79,50 @@
     "loginSuccessTitle": "Login successful",
     "signupErrorTitle": "Sign up failed",
     "signupSuccessTitle": "Sign up successful",
-    "signupSuccessDescription": "Please check your email to verify your account."
+    "signupSuccessDescription": "Please check your email to verify your account.",
+    "logoutError": "Logout failed"
+  },
+  "dashboardCards": {
+    "plotInput": {
+      "title": "1. Enter Your Story/Plot",
+      "description": "Enter your original story, novel excerpt, or core plot here.",
+      "placeholder": "e.g., In a cyberpunk city, a detective with amnesia must recover his past while uncovering a conspiracy that threatens the entire city...",
+      "button": "Start Screenwriter Agent"
+    },
+    "screenwriterOutput": {
+      "title": "2. Screenwriter Agent Processing",
+      "description": "The AI will generate a preliminary narrative script based on your plot.",
+      "label": "Preliminary Script (editable):",
+      "button": "Hand over to Director Agent (generate structured shots)",
+      "waiting": "Waiting for main plot input and processing to start...",
+      "processing": "Processing..."
+    },
+    "directorOutput": {
+      "title": "3. Director Agent Processing (Structured Shots)",
+      "description": "The AI will break down the script into a structured list of shots (JSON format). You can save it after processing is complete.",
+      "label": "Structured Shot List (JSON format, editable):",
+      "placeholder": "The Director Agent will output a structured list of shots in JSON format here...",
+      "button": "Save Shots to Database",
+      "waiting": "Waiting for Screenwriter Agent to finish or Director Agent to generate structured shots...",
+      "processing": "Processing..."
+    }
+  },
+  "prompts": {
+    "plotRequired": "Please enter the plot content",
+    "screenwriter": {
+      "successTitle": "Screenwriter Agent Processing Complete",
+      "successDescription": "Preliminary script content has been successfully generated.",
+      "errorTitle": "Screenwriter Agent Failed to Generate Content",
+      "errorDescription": "Please check your network or try again later.",
+      "exceptionTitle": "Screenwriter Agent Processing Exception"
+    },
+    "project": {
+      "loadOrCreateError": "Failed to load or create project",
+      "updateErrorTitle": "Update Failed",
+      "updateErrorDescription": "No project selected.",
+      "updatedTitle": "Project Saved",
+      "updateFailedTitle": "Project update failed",
+      "newProjectTitle": "New Project"
+    }
   }
 }
