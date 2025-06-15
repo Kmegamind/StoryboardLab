@@ -71,19 +71,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-black/25 will-change-transform transition-all duration-500 ease-jelly translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
-          <span className={cn(
-            "absolute top-0 left-0 w-full h-full rounded-lg",
-            variant === 'outline' ? "bg-background/80 border-2 border-primary" : "bg-gradient-to-l from-primary/50 via-primary/80 to-primary/50"
-          )} />
-          <span className={cn(
-            frontClasses,
-            variant === 'outline'
-              ? "bg-transparent text-primary shadow-none"
-              : "bg-primary text-primary-foreground shadow-futuristic-inset"
-          )}>
-            {props.children}
-          </span>
+          <div className="relative w-full h-full">
+            <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-black/25 will-change-transform transition-all duration-500 ease-jelly translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
+            <span className={cn(
+              "absolute top-0 left-0 w-full h-full rounded-lg",
+              variant === 'outline' ? "bg-background/80 border-2 border-primary" : "bg-gradient-to-l from-primary/50 via-primary/80 to-primary/50"
+            )} />
+            <span className={cn(
+              frontClasses,
+              variant === 'outline'
+                ? "bg-transparent text-primary shadow-none"
+                : "bg-primary text-primary-foreground shadow-futuristic-inset"
+            )}>
+              {props.children}
+            </span>
+          </div>
         </Comp>
       )
     }
