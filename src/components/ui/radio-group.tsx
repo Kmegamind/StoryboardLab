@@ -38,7 +38,7 @@ const RadioGroupItem = React.forwardRef<
       {...props}
     >
       {/* Shadow layer */}
-      <span className="absolute top-0 left-0 w-full h-full rounded-full bg-black/25 will-change-transform transition-transform duration-300 ease-jelly translate-y-0.5 group-hover:translate-y-1 group-active:translate-y-px" />
+      <span className="absolute top-0 left-0 w-full h-full rounded-full bg-black/25 will-change-transform transition-transform duration-500 ease-jelly translate-y-1 group-hover:translate-y-1.5 group-active:translate-y-px" />
       
       {/* Edge layer for 3D effect */}
       <span className="absolute top-0 left-0 w-full h-full rounded-full bg-gradient-to-l from-primary/40 via-primary/70 to-primary/40" />
@@ -47,8 +47,8 @@ const RadioGroupItem = React.forwardRef<
       <span className={cn(
         "flex items-center justify-center relative w-full h-full rounded-full",
         "bg-primary text-primary-foreground shadow-futuristic-inset",
-        "will-change-transform transition-transform duration-300 ease-jelly -translate-y-1",
-        "group-hover:-translate-y-1.5 group-active:-translate-y-0.5"
+        "will-change-transform transition-transform duration-500 ease-jelly -translate-y-1.5",
+        "group-hover:-translate-y-2 group-active:-translate-y-0.5"
       )}>
         {children}
         <RadioGroupPrimitive.Indicator className="flex items-center justify-center">

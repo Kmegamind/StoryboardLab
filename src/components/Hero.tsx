@@ -8,7 +8,7 @@ const Hero = () => {
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Gradient Animation */}
       <div className="absolute inset-0 -z-10">
-        <div className="relative w-full h-full bg-gradient-to-br from-brand-purple via-brand-pink to-brand-cyan grainy-noise"></div>
+        <div className="relative w-full h-full bg-gradient-to-br from-brand-purple via-brand-pink to-brand-cyan grainy-noise animate-gradient-xy"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
