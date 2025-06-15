@@ -63,5 +63,22 @@
   },
   "languageSwitcher": {
     "label": "语言"
+  },
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "loginCTA": "登录以继续",
+    "signupCTA": "创建新账户",
+    "emailLabel": "邮箱",
+    "passwordLabel": "密码",
+    "loginButton": "登录",
+    "signupButton": "注册",
+    "loggingIn": "登录中...",
+    "signingUp": "注册中...",
+    "loginErrorTitle": "登录失败",
+    "loginSuccessTitle": "登录成功",
+    "signupErrorTitle": "注册失败",
+    "signupSuccessTitle": "注册成功",
+    "signupSuccessDescription": "请检查您的邮箱以验证您的账户。"
   }
 }

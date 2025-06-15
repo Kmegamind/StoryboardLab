@@ -63,5 +63,22 @@
   },
   "languageSwitcher": {
     "label": "Language"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "loginCTA": "Login to continue",
+    "signupCTA": "Create a new account",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "loginButton": "Login",
+    "signupButton": "Sign Up",
+    "loggingIn": "Logging in...",
+    "signingUp": "Signing up...",
+    "loginErrorTitle": "Login failed",
+    "loginSuccessTitle": "Login successful",
+    "signupErrorTitle": "Sign up failed",
+    "signupSuccessTitle": "Sign up successful",
+    "signupSuccessDescription": "Please check your email to verify your account."
   }
 }

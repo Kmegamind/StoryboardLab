@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from 'react-i18next';
 
 const AuthPage = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,9 +23,9 @@ const AuthPage = () => {
         setLoading(true);
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
-            toast({ title: '登录失败', description: error.message, variant: 'destructive' });
+            toast({ title: t('auth.loginErrorTitle'), description: error.message, variant: 'destructive' });
         } else {
-            toast({ title: '登录成功' });
+            toast({ title: t('auth.loginSuccessTitle') });
             navigate('/');
         }
         setLoading(false);
@@ -40,9 +42,9 @@ const AuthPage = () => {
             }
         });
         if (error) {
-            toast({ title: '注册失败', description: error.message, variant: 'destructive' });
+            toast({ title: t('auth.signupErrorTitle'), description: error.message, variant: 'destructive' });
         } else {
-            toast({ title: '注册成功', description: '请检查您的邮箱以验证您的账户。' });
+            toast({ title: t('auth.signupSuccessTitle'), description: t('auth.signupSuccessDescription') });
         }
         setLoading(false);
     };
@@ -51,26 +53,26 @@ const AuthPage = () => {
         <div className="flex items-center justify-center min-h-screen bg-background">
             <Tabs defaultValue="login" className="w-[400px]">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">登录</TabsTrigger>
-                    <TabsTrigger value="signup">注册</TabsTrigger>
+                    <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+                    <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="login">
                     <Card>
                         <CardHeader>
-                            <CardTitle>登录</CardTitle>
-                            <CardDescription>登录以继续</CardDescription>
+                            <CardTitle>{t('auth.login')}</CardTitle>
+                            <CardDescription>{t('auth.loginCTA')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div>
-                                    <Label htmlFor="email">邮箱</Label>
+                                    <Label htmlFor="email">{t('auth.emailLabel')}</Label>
                                     <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                                 </div>
                                 <div>
-                                    <Label htmlFor="password">密码</Label>
+                                    <Label htmlFor="password">{t('auth.passwordLabel')}</Label>
                                     <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                                 </div>
-                                <Button type="submit" disabled={loading} className="w-full">{loading ? '登录中...' : '登录'}</Button>
+                                <Button type="submit" disabled={loading} className="w-full">{loading ? t('auth.loggingIn') : t('auth.loginButton')}</Button>
                             </form>
                         </CardContent>
                     </Card>
@@ -78,20 +80,20 @@ const AuthPage = () => {
                 <TabsContent value="signup">
                      <Card>
                         <CardHeader>
-                            <CardTitle>注册</CardTitle>
-                            <CardDescription>创建新账户</CardDescription>
+                            <CardTitle>{t('auth.signup')}</CardTitle>
+                            <CardDescription>{t('auth.signupCTA')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSignup} className="space-y-4">
                                 <div>
-                                    <Label htmlFor="signup-email">邮箱</Label>
+                                    <Label htmlFor="signup-email">{t('auth.emailLabel')}</Label>
                                     <Input id="signup-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                                 </div>
                                 <div>
-                                    <Label htmlFor="signup-password">密码</Label>
+                                    <Label htmlFor="signup-password">{t('auth.passwordLabel')}</Label>
                                     <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                                 </div>
-                                <Button type="submit" disabled={loading} className="w-full">{loading ? '注册中...' : '注册'}</Button>
+                                <Button type="submit" disabled={loading} className="w-full">{loading ? t('auth.signingUp') : t('auth.signupButton')}</Button>
                             </form>
                         </CardContent>
                     </Card>
