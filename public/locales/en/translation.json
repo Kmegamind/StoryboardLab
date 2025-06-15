@@ -2,15 +2,15 @@
 {
   "navbar": {
     "agents": "Agents",
-    "debugAgents": "Debug Agents",
+    "testAgents": "Test Agents",
     "screenwriterAgent": "Screenwriter Agent",
     "directorAgent": "Director Agent",
     "cinematographerAgent": "Cinematographer Agent",
     "artDirectorAgent": "Art Director Agent",
-    "debugScreenwriterAgent": "Debug Screenwriter Agent",
-    "debugDirectorAgent": "Debug Director Agent",
-    "debugCinematographerAgent": "Debug Cinematographer Agent",
-    "debugArtDirectorAgent": "Debug Art Director Agent"
+    "testScreenwriterAgent": "Test Screenwriter Agent",
+    "testDirectorAgent": "Test Director Agent",
+    "testCinematographerAgent": "Test Cinematographer Agent",
+    "testArtDirectorAgent": "Test Art Director Agent"
   },
   "dashboardHeader": {
     "title": "AI Film Creation Workbench",

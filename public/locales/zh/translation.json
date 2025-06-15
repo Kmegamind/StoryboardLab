@@ -2,15 +2,15 @@
 {
   "navbar": {
     "agents": "Agents",
-    "debugAgents": "调试 Agents",
+    "testAgents": "测试 Agents",
     "screenwriterAgent": "编剧 Agent",
     "directorAgent": "导演 Agent",
     "cinematographerAgent": "摄像 Agent",
     "artDirectorAgent": "美术指导 Agent",
-    "debugScreenwriterAgent": "调试编剧 Agent",
-    "debugDirectorAgent": "调试导演 Agent",
-    "debugCinematographerAgent": "调试摄像 Agent",
-    "debugArtDirectorAgent": "调试美术指导 Agent"
+    "testScreenwriterAgent": "测试编剧 Agent",
+    "testDirectorAgent": "测试导演 Agent",
+    "testCinematographerAgent": "测试摄像 Agent",
+    "testArtDirectorAgent": "测试美术指导 Agent"
   },
   "dashboardHeader": {
     "title": "AI电影创作工作台",

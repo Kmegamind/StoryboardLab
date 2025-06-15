@@ -31,11 +31,11 @@ const Navbar = () => {
     { to: '/agents/art-director', label: t('navbar.artDirectorAgent') },
   ];
 
-  const debugAgentNavLinks = [
-    { to: '/agents/screenwriter', label: t('navbar.debugScreenwriterAgent') },
-    { to: '/agents/director', label: t('navbar.debugDirectorAgent') },
-    { to: '/agents/cinematographer', label: t('navbar.debugCinematographerAgent') },
-    { to: '/agents/art-director', label: t('navbar.debugArtDirectorAgent') },
+  const testAgentNavLinks = [
+    { to: '/agents/screenwriter', label: t('navbar.testScreenwriterAgent') },
+    { to: '/agents/director', label: t('navbar.testDirectorAgent') },
+    { to: '/agents/cinematographer', label: t('navbar.testCinematographerAgent') },
+    { to: '/agents/art-director', label: t('navbar.testArtDirectorAgent') },
   ];
 
   useEffect(() => {
@@ -103,15 +103,15 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* Agent Debug Links Dropdown */}
+            {/* Test Agent Links Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
-                  {t('navbar.debugAgents')} <ChevronDown className="ml-1 h-4 w-4" />
+                  {t('navbar.testAgents')} <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
-                {debugAgentNavLinks.map((link) => (
+                {testAgentNavLinks.map((link) => (
                   <DropdownMenuItem key={link.to} asChild className="hover:bg-muted/50 cursor-pointer">
                     <Link to={link.to} className="w-full text-foreground hover:text-primary">
                       {link.label}
@@ -145,9 +145,9 @@ const Navbar = () => {
             {agentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
-            {/* Agent Debug Links in Mobile Menu */}
-            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.debugAgents')}:</p>
-            {debugAgentNavLinks.map((link) => (
+            {/* Test Agent Links in Mobile Menu */}
+            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.testAgents')}:</p>
+            {testAgentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
             <div className="pt-4 mt-4 border-t border-border">
