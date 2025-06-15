@@ -15,7 +15,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) 
     <header className="mb-12 text-center">
       <h1 className="text-5xl font-bold text-primary">{t('dashboardHeader.title')}</h1>
       <p className="text-xl text-muted-foreground mt-2">
-        {t('dashboardHeader.currentProject')}: <span className="font-semibold">{project.title}</span> ({t('dashboardHeader.status')}: {project.status})
+        {t('dashboardHeader.currentProject')}: <span className="font-semibold">{project.title}</span> ({t('dashboardHeader.status')}: {t(`projectStatuses.${project.status}`, project.status)})
       </p>
       <Button onClick={onLogout} variant="outline" className="mt-4">{t('dashboardHeader.logout')}</Button>
     </header>

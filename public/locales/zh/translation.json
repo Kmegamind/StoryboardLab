@@ -124,5 +124,11 @@
       "updateFailedTitle": "项目更新失败",
       "newProjectTitle": "新项目"
     }
+  },
+  "projectStatuses": {
+    "new": "新建",
+    "writing": "编剧中",
+    "directing": "导演中",
+    "completed": "已完成"
   }
 }

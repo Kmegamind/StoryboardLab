@@ -124,5 +124,11 @@
       "updateFailedTitle": "Project update failed",
       "newProjectTitle": "New Project"
     }
+  },
+  "projectStatuses": {
+    "new": "New",
+    "writing": "Writing",
+    "directing": "Directing",
+    "completed": "Completed"
   }
 }
