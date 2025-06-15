@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const usePlotProcessing = () => {
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);

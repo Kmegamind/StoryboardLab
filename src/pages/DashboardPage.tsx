@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
 import ArchivedShotsList from '@/components/dashboard/ArchivedShotsList';
