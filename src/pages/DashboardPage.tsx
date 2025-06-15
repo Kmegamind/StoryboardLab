@@ -1,9 +1,11 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
 import PlotInputCard from '@/components/dashboard/PlotInputCard';
 import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
 import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
+import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
 import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
 import AgentAnalysisCard from '@/components/dashboard/AgentAnalysisCard';
@@ -13,6 +15,7 @@ import { useProject } from '@/hooks/useProject';
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
 import { useDirectorProcessing } from '@/hooks/useDirectorProcessing';
 import { useShotManagement } from '@/hooks/useShotManagement';
+import { useProjectAssets } from '@/hooks/useProjectAssets';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 
@@ -45,6 +48,14 @@ const DashboardPage = () => {
   } = useShotManagement();
 
   const { isLoadingScreenwriter, processPlotWithScreenwriter } = usePlotProcessing();
+  
+  const {
+    assets,
+    isLoadingAssets,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+  } = useProjectAssets(project?.id);
   
   const handleFetchSavedShots = useCallback(() => {
       if (project) {
@@ -197,6 +208,14 @@ const DashboardPage = () => {
           />
         </div>
       </div>
+
+      <ProjectAssetsCard
+        assets={assets}
+        isLoading={isLoadingAssets}
+        onAddAsset={addAsset}
+        onUpdateAsset={updateAsset}
+        onDeleteAsset={deleteAsset}
+      />
 
       <FutureAreaCard
         savedShots={savedShots}
