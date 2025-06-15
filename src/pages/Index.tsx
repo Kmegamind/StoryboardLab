@@ -1,15 +1,15 @@
 
 import React from 'react';
-import DashboardPage from './DashboardPage'; // Import the new DashboardPage
+import Hero from '@/components/Hero';
+import Features from '@/components/Features';
 
 const Index = () => {
   return (
     <>
-      {/* The main content is now the DashboardPage */}
-      <DashboardPage />
+      <Hero />
+      <Features />
     </>
   );
 };
 
 export default Index;
-

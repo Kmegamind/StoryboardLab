@@ -1,4 +1,3 @@
-
 {
   "navbar": {
     "agents": "Agents",
@@ -27,6 +26,35 @@
   "selectedShotDetails": {
     "cinematographerPlan": "摄像 Agent 方案",
     "artDirectorPlan": "美术指导 Agent 方案"
+  },
+  "hero": {
+    "subtitle": "革命性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。",
+    "tagline": "让每个故事都能绽放视觉生命力",
+    "cta": {
+      "start": "开始创作",
+      "watchDemo": "观看演示"
+    },
+    "imageUploadHint": "您可以上传一张图片作为背景，让页面更具吸引力。"
+  },
+  "features": {
+    "title": "核心功能",
+    "subtitle": "探索 CinemaAI Studio 强大的功能集，助力您的影视创作之旅。",
+    "storyScript": {
+      "title": "故事剧本转化系统",
+      "description": "支持多种输入格式，智能解析剧本，生成初步预览报告。"
+    },
+    "multiAgent": {
+      "title": "多专家Agent协作",
+      "description": "编剧、导演、摄像、美术Agent协同工作，产出专业级创作指令。"
+    },
+    "promptFactory": {
+      "title": "提示词工厂系统",
+      "description": "动态提示词模板引擎，为角色、场景生成高度优化的视觉提示词。"
+    },
+    "comfyUI": {
+      "title": "ComfyUI自动化流水线",
+      "description": "实现角色多角度、多表情的批量化、标准化视觉资产生成。"
+    }
   },
   "footer": {
     "copyright": "版权所有",

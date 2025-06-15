@@ -1,4 +1,3 @@
-
 {
   "navbar": {
     "agents": "Agents",
@@ -27,6 +26,35 @@
   "selectedShotDetails": {
     "cinematographerPlan": "Cinematographer Agent Plan",
     "artDirectorPlan": "Art Director Agent Plan"
+  },
+  "hero": {
+    "subtitle": "A revolutionary AI filmmaking platform that automatically converts your story scripts into executable AI generation instructions.",
+    "tagline": "Bringing every story to visual life",
+    "cta": {
+      "start": "Start Creating",
+      "watchDemo": "Watch Demo"
+    },
+    "imageUploadHint": "You can upload an image as a background to make the page more attractive."
+  },
+  "features": {
+    "title": "Core Features",
+    "subtitle": "Explore the powerful feature set of CinemaAI Studio to empower your filmmaking journey.",
+    "storyScript": {
+      "title": "Story Script Conversion System",
+      "description": "Supports multiple input formats, intelligently parses scripts, and generates preliminary preview reports."
+    },
+    "multiAgent": {
+      "title": "Multi-Expert Agent Collaboration",
+      "description": "Screenwriter, director, cinematographer, and art director agents work together to produce professional-grade creative instructions."
+    },
+    "promptFactory": {
+      "title": "Prompt Factory System",
+      "description": "Dynamic prompt template engine to generate highly optimized visual prompts for characters and scenes."
+    },
+    "comfyUI": {
+      "title": "ComfyUI Automation Pipeline",
+      "description": "Achieve batch and standardized visual asset generation for characters with multiple angles and expressions."
+    }
   },
   "footer": {
     "copyright": "All rights reserved",

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,6 +15,7 @@ import Footer from "./components/Footer"; // Import Footer
 import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./i18n"; // Import i18n configuration
+import DashboardPage from './pages/DashboardPage';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +36,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<ProtectedRoute><AppLayout><Index /></AppLayout></ProtectedRoute>} />
+            <Route path="/" element={<AppLayout><Index /></AppLayout>} />
+            <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/screenwriter" element={<ProtectedRoute><AppLayout><ScreenwriterAgentPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/director" element={<ProtectedRoute><AppLayout><DirectorAgentPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/cinematographer" element={<ProtectedRoute><AppLayout><CinematographerAgentPage /></AppLayout></ProtectedRoute>} />
