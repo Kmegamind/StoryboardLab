@@ -7,6 +7,7 @@ import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
 import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
 import AgentAnalysisCard from '@/components/dashboard/AgentAnalysisCard';
+import ArchivedShotsList from '@/components/dashboard/ArchivedShotsList';
 import { Camera, Palette, Loader2 } from 'lucide-react';
 import { useProject } from '@/hooks/useProject';
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
@@ -25,6 +26,7 @@ const DashboardPage = () => {
 
   const {
     savedShots,
+    archivedShots,
     isLoadingSavedShots,
     selectedShot,
     generatedImagePrompts,
@@ -35,6 +37,7 @@ const DashboardPage = () => {
     isLoadingArtDirector,
     fetchSavedShots,
     selectShot,
+    toggleShotArchiveStatus,
     generatePromptsForSelectedShot,
     generateCinematographerPlan,
     generateArtDirectorPlan,
@@ -200,6 +203,12 @@ const DashboardPage = () => {
         isLoadingSavedShots={isLoadingSavedShots}
         onSelectShot={selectShot}
         selectedShotId={selectedShot?.id}
+        onToggleArchive={toggleShotArchiveStatus}
+      />
+
+      <ArchivedShotsList
+        archivedShots={archivedShots}
+        onToggleArchive={toggleShotArchiveStatus}
       />
 
       {selectedShot && (

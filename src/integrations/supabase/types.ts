@@ -53,6 +53,7 @@ export type Database = {
           director_notes: string | null
           estimated_duration: string | null
           id: string
+          is_archived: boolean
           key_props: string | null
           project_id: string | null
           scene_content: string
@@ -70,6 +71,7 @@ export type Database = {
           director_notes?: string | null
           estimated_duration?: string | null
           id?: string
+          is_archived?: boolean
           key_props?: string | null
           project_id?: string | null
           scene_content: string
@@ -87,6 +89,7 @@ export type Database = {
           director_notes?: string | null
           estimated_duration?: string | null
           id?: string
+          is_archived?: boolean
           key_props?: string | null
           project_id?: string | null
           scene_content?: string

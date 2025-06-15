@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -8,7 +7,8 @@ import { callDeepSeekAPI } from '@/utils/apiUtils';
 type Shot = Tables<'structured_shots'>;
 
 export const useShotManagement = () => {
-  const [savedShots, setSavedShots] = useState<Shot[]>([]);
+  const [savedShots, setSavedShots] = useState<Shot[]>([]); // Active shots
+  const [archivedShots, setArchivedShots] = useState<Shot[]>([]); // Archived shots
   const [isLoadingSavedShots, setIsLoadingSavedShots] = useState<boolean>(false);
   const [selectedShot, setSelectedShot] = useState<Shot | null>(null);
   const [generatedImagePrompts, setGeneratedImagePrompts] = useState<string | null>(null);
@@ -18,13 +18,18 @@ export const useShotManagement = () => {
   const [artDirectorPlan, setArtDirectorPlan] = useState<string | null>(null);
   const [isLoadingArtDirector, setIsLoadingArtDirector] = useState<boolean>(false);
 
+  const clearSelectedShotAndPrompts = useCallback(() => {
+    setSelectedShot(null);
+    setGeneratedImagePrompts(null);
+    setCinematographerPlan(null);
+    setArtDirectorPlan(null);
+  }, []);
+
   const fetchSavedShots = useCallback(async (projectId: string) => {
     setIsLoadingSavedShots(true);
     setSavedShots([]);
-    setSelectedShot(null); // Reset selected shot when refetching
-    setGeneratedImagePrompts(null); // Clear prompts
-    setCinematographerPlan(null);
-    setArtDirectorPlan(null);
+    setArchivedShots([]);
+    clearSelectedShotAndPrompts();
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -34,21 +39,28 @@ export const useShotManagement = () => {
       const { data, error } = await supabase
         .from('structured_shots')
         .select('*')
-        .eq('project_id', projectId) // Fetch shots for the specific project
-        .order('created_at', { ascending: true }); // Order by creation time
+        .eq('project_id', projectId)
+        .order('shot_number', { ascending: true, nullsFirst: false });
+        
       if (error) {
         toast({ title: "加载分镜失败", description: `数据库错误: ${error.message}`, variant: "destructive"});
         setSavedShots([]);
+        setArchivedShots([]);
       } else {
-        setSavedShots(data || []);
+        const allShots = data || [];
+        const active = allShots.filter(shot => !shot.is_archived);
+        const archived = allShots.filter(shot => shot.is_archived);
+        setSavedShots(active);
+        setArchivedShots(archived);
       }
     } catch (e) {
       toast({ title: "加载分镜出错", description: "加载过程中发生未知错误。", variant: "destructive"});
       setSavedShots([]);
+      setArchivedShots([]);
     } finally {
       setIsLoadingSavedShots(false);
     }
-  }, []);
+  }, [clearSelectedShotAndPrompts]);
 
   const selectShot = (shot: Shot) => {
     setSelectedShot(shot);
@@ -59,6 +71,41 @@ export const useShotManagement = () => {
       title: "分镜已选择",
       description: `已选择镜号: ${shot.shot_number || 'N/A'}.`,
     });
+  };
+
+  const toggleShotArchiveStatus = async (shot: Shot) => {
+    const currentStatus = shot.is_archived;
+
+    // Optimistic UI update
+    if (currentStatus) { // Unarchiving
+      setArchivedShots(prev => prev.filter(s => s.id !== shot.id));
+      setSavedShots(prev => [...prev, { ...shot, is_archived: false }].sort((a, b) => (a.shot_number || "").localeCompare(b.shot_number || "")));
+    } else { // Archiving
+      setSavedShots(prev => prev.filter(s => s.id !== shot.id));
+      setArchivedShots(prev => [...prev, { ...shot, is_archived: true }].sort((a, b) => (a.shot_number || "").localeCompare(b.shot_number || "")));
+      if (selectedShot?.id === shot.id) {
+        clearSelectedShotAndPrompts();
+      }
+    }
+
+    const { error } = await supabase
+      .from('structured_shots')
+      .update({ is_archived: !currentStatus })
+      .eq('id', shot.id);
+
+    if (error) {
+      toast({ title: "操作失败", description: `网络错误: ${error.message}`, variant: "destructive" });
+      // Revert UI on failure
+      if (currentStatus) { // Failed to unarchive
+        setSavedShots(prev => prev.filter(s => s.id !== shot.id));
+        setArchivedShots(prev => [...prev, shot].sort((a, b) => (a.shot_number || "").localeCompare(b.shot_number || "")));
+      } else { // Failed to archive
+        setArchivedShots(prev => prev.filter(s => s.id !== shot.id));
+        setSavedShots(prev => [...prev, shot].sort((a, b) => (a.shot_number || "").localeCompare(b.shot_number || "")));
+      }
+    } else {
+        toast({ title: `分镜已成功${!currentStatus ? '存档' : '恢复'}.` });
+    }
   };
 
   const generatePromptsForSelectedShot = async () => {
@@ -216,16 +263,10 @@ ${selectedShot.director_notes ? `- 导演注释: ${selectedShot.director_notes}`
     }
     setIsLoadingArtDirector(false);
   };
-  
-  const clearSelectedShotAndPrompts = () => {
-    setSelectedShot(null);
-    setGeneratedImagePrompts(null);
-    setCinematographerPlan(null);
-    setArtDirectorPlan(null);
-  };
 
   return {
     savedShots,
+    archivedShots,
     isLoadingSavedShots,
     selectedShot,
     generatedImagePrompts,
@@ -236,6 +277,7 @@ ${selectedShot.director_notes ? `- 导演注释: ${selectedShot.director_notes}`
     isLoadingArtDirector,
     fetchSavedShots,
     selectShot,
+    toggleShotArchiveStatus,
     generatePromptsForSelectedShot,
     generateCinematographerPlan,
     generateArtDirectorPlan,
