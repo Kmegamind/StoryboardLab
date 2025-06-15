@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type ProjectAsset = Tables<'project_assets'>;

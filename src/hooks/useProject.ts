@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 // Manually defining types as a workaround for potential type generation issues.
 export type Project = {

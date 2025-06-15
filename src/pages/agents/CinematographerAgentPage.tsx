@@ -24,7 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   scene: z.string().min(20, { message: "请至少输入20个字的场景描述。" }),
