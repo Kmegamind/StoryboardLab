@@ -1,23 +1,19 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
-import PlotInputCard from '@/components/dashboard/PlotInputCard';
-import ScreenwriterOutputCard from '@/components/dashboard/ScreenwriterOutputCard';
-import DirectorOutputCard from '@/components/dashboard/DirectorOutputCard';
 import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
-import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
-import AgentAnalysisCard from '@/components/dashboard/AgentAnalysisCard';
 import ArchivedShotsList from '@/components/dashboard/ArchivedShotsList';
-import { Camera, Palette, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useProject } from '@/hooks/useProject';
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
 import { useDirectorProcessing } from '@/hooks/useDirectorProcessing';
 import { useShotManagement } from '@/hooks/useShotManagement';
 import { useProjectAssets } from '@/hooks/useProjectAssets';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
+import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
@@ -172,42 +168,23 @@ const DashboardPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
-      <header className="mb-12 text-center">
-        <h1 className="text-5xl font-bold text-primary">AI电影创作工作台</h1>
-        <p className="text-xl text-muted-foreground mt-2">
-          当前项目: <span className="font-semibold">{project.title}</span> (状态: {project.status})
-        </p>
-        <Button onClick={handleLogout} variant="outline" className="mt-4">登出</Button>
-      </header>
+      <DashboardHeader project={project} onLogout={handleLogout} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        <PlotInputCard
-          plot={plot}
-          setPlot={setPlot}
-          onProcessPlot={handleProcessPlot}
-          isLoadingScreenwriter={isLoadingScreenwriter}
-          disabled={isProcessing}
-        />
-
-        <div className="md:col-span-2 space-y-8">
-          <ScreenwriterOutputCard
-            screenwriterOutput={screenwriterOutput}
-            setScreenwriterOutput={setScreenwriterOutput}
-            onDirectorProcessing={handleDirectorProcessing}
-            isLoadingScreenwriter={isLoadingScreenwriter}
-            isLoadingDirector={isLoadingDirector}
-            disabled={!screenwriterOutput || isProcessing}
-          />
-          <DirectorOutputCard
-            directorOutput={directorOutput}
-            setDirectorOutput={setDirectorOutput}
-            onSaveShotsToDatabase={handleSaveShots}
-            isLoadingDirector={isLoadingDirector}
-            isSavingShots={isSavingShots}
-            disabled={!directorOutput || isProcessing}
-          />
-        </div>
-      </div>
+      <ProcessingPipeline
+        plot={plot}
+        setPlot={setPlot}
+        onProcessPlot={handleProcessPlot}
+        isLoadingScreenwriter={isLoadingScreenwriter}
+        screenwriterOutput={screenwriterOutput}
+        setScreenwriterOutput={setScreenwriterOutput}
+        onDirectorProcessing={handleDirectorProcessing}
+        isLoadingDirector={isLoadingDirector}
+        directorOutput={directorOutput}
+        setDirectorOutput={setDirectorOutput}
+        onSaveShotsToDatabase={handleSaveShots}
+        isSavingShots={isSavingShots}
+        isProcessing={isProcessing}
+      />
 
       <ProjectAssetsCard
         assets={assets}
@@ -231,32 +208,18 @@ const DashboardPage = () => {
       />
 
       {selectedShot && (
-        <>
-          <SelectedShotActionsCard
-            selectedShot={selectedShot}
-            onGeneratePrompts={generatePromptsForSelectedShot}
-            isLoadingPrompts={isLoadingImagePrompts}
-            generatedPrompts={generatedImagePrompts}
-            onGenerateCinematographerPlan={generateCinematographerPlan}
-            isLoadingCinematographer={isLoadingCinematographer}
-            onGenerateArtDirectorPlan={generateArtDirectorPlan}
-            isLoadingArtDirector={isLoadingArtDirector}
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <AgentAnalysisCard 
-              title="摄像 Agent 方案"
-              isLoading={isLoadingCinematographer}
-              analysis={cinematographerPlan}
-              icon={<Camera className="h-6 w-6 text-primary" />}
-            />
-            <AgentAnalysisCard 
-              title="美术指导 Agent 方案"
-              isLoading={isLoadingArtDirector}
-              analysis={artDirectorPlan}
-              icon={<Palette className="h-6 w-6 text-primary" />}
-            />
-          </div>
-        </>
+        <SelectedShotDetails
+          selectedShot={selectedShot}
+          onGeneratePrompts={generatePromptsForSelectedShot}
+          isLoadingPrompts={isLoadingImagePrompts}
+          generatedPrompts={generatedImagePrompts}
+          onGenerateCinematographerPlan={generateCinematographerPlan}
+          isLoadingCinematographer={isLoadingCinematographer}
+          cinematographerPlan={cinematographerPlan}
+          onGenerateArtDirectorPlan={generateArtDirectorPlan}
+          isLoadingArtDirector={isLoadingArtDirector}
+          artDirectorPlan={artDirectorPlan}
+        />
       )}
     </div>
   );
