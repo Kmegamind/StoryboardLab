@@ -1,8 +1,8 @@
 
 {
   "navbar": {
-    "agents": "Agents",
-    "testAgents": "测试 Agents",
+    "agents": "智能体",
+    "testAgents": "测试智能体",
     "screenwriterAgent": "编剧 Agent",
     "directorAgent": "导演 Agent",
     "cinematographerAgent": "摄像 Agent",
