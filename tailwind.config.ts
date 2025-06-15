@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,6 +63,12 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			boxShadow: {
+        'futuristic-inset': 'inset 4px 4px 8px hsl(var(--primary-dark)), inset -4px -4px 8px hsl(var(--primary-light))',
+      },
+      dropShadow: {
+        'futuristic-glow': '0 0 20px hsl(var(--primary) / 0.7)',
+      },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
@@ -106,4 +111,3 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
