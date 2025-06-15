@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Film, Menu, X, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link for internal navigation
 import {
@@ -8,8 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
 import { Button } from "@/components/ui/button"; // Import Button for trigger styling
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -22,17 +25,17 @@ const Navbar = () => {
   ];
 
   const agentNavLinks = [
-    { to: '/agents/screenwriter', label: '编剧 Agent' },
-    { to: '/agents/director', label: '导演 Agent' },
-    { to: '/agents/cinematographer', label: '摄像 Agent' },
-    { to: '/agents/art-director', label: '美术指导 Agent' },
+    { to: '/agents/screenwriter', label: t('navbar.screenwriterAgent') },
+    { to: '/agents/director', label: t('navbar.directorAgent') },
+    { to: '/agents/cinematographer', label: t('navbar.cinematographerAgent') },
+    { to: '/agents/art-director', label: t('navbar.artDirectorAgent') },
   ];
 
   const debugAgentNavLinks = [
-    { to: '/agents/screenwriter', label: '调试编剧 Agent' },
-    { to: '/agents/director', label: '调试导演 Agent' },
-    { to: '/agents/cinematographer', label: '调试摄像 Agent' },
-    { to: '/agents/art-director', label: '调试美术指导 Agent' },
+    { to: '/agents/screenwriter', label: t('navbar.debugScreenwriterAgent') },
+    { to: '/agents/director', label: t('navbar.debugDirectorAgent') },
+    { to: '/agents/cinematographer', label: t('navbar.debugCinematographerAgent') },
+    { to: '/agents/art-director', label: t('navbar.debugArtDirectorAgent') },
   ];
 
   useEffect(() => {
@@ -87,7 +90,7 @@ const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
-                  Agents <ChevronDown className="ml-1 h-4 w-4" />
+                  {t('navbar.agents')} <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
@@ -104,7 +107,7 @@ const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
-                  调试 Agents <ChevronDown className="ml-1 h-4 w-4" />
+                  {t('navbar.debugAgents')} <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
@@ -117,6 +120,7 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <LanguageSwitcher />
           </div>
           <div className="md:hidden">
             <button
@@ -137,15 +141,18 @@ const Navbar = () => {
               <NavLinkItem key={link.label} href={link.href} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={link.isRouterLink} />
             ))}
             {/* Agent Links in Mobile Menu */}
-            <p className="text-muted-foreground px-2 pt-2 text-sm">Agents:</p>
+            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.agents')}:</p>
             {agentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
             {/* Agent Debug Links in Mobile Menu */}
-            <p className="text-muted-foreground px-2 pt-2 text-sm">调试 Agents:</p>
+            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.debugAgents')}:</p>
             {debugAgentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
+            <div className="pt-4 mt-4 border-t border-border">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       )}

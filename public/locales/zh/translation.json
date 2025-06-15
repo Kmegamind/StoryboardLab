@@ -1,0 +1,39 @@
+
+{
+  "navbar": {
+    "agents": "Agents",
+    "debugAgents": "调试 Agents",
+    "screenwriterAgent": "编剧 Agent",
+    "directorAgent": "导演 Agent",
+    "cinematographerAgent": "摄像 Agent",
+    "artDirectorAgent": "美术指导 Agent",
+    "debugScreenwriterAgent": "调试编剧 Agent",
+    "debugDirectorAgent": "调试导演 Agent",
+    "debugCinematographerAgent": "调试摄像 Agent",
+    "debugArtDirectorAgent": "调试美术指导 Agent"
+  },
+  "dashboardHeader": {
+    "title": "AI电影创作工作台",
+    "currentProject": "当前项目",
+    "status": "状态",
+    "logout": "登出"
+  },
+  "dashboardPage": {
+    "loading": "正在加载您的创作项目...",
+    "loadError": "无法加载项目。请检查您的网络连接并刷新页面。如果您未登录，请先登录。",
+    "directorOutputWarningTitle": "警告：导演 Agent 输出内容格式有误",
+    "directorOutputWarningDescription": "AI输出的可能不是标准JSON格式。请在保存前仔细检查并手动编辑。"
+  },
+  "selectedShotDetails": {
+    "cinematographerPlan": "摄像 Agent 方案",
+    "artDirectorPlan": "美术指导 Agent 方案"
+  },
+  "footer": {
+    "copyright": "版权所有",
+    "license": "影视作品版权遵循CC BY-NC 4.0协议，禁止商业用途需额外授权。",
+    "poweredBy": "由 Lovable AI 驱动生成 ❤️"
+  },
+  "languageSwitcher": {
+    "label": "语言"
+  }
+}

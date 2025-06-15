@@ -1,0 +1,39 @@
+
+{
+  "navbar": {
+    "agents": "Agents",
+    "debugAgents": "Debug Agents",
+    "screenwriterAgent": "Screenwriter Agent",
+    "directorAgent": "Director Agent",
+    "cinematographerAgent": "Cinematographer Agent",
+    "artDirectorAgent": "Art Director Agent",
+    "debugScreenwriterAgent": "Debug Screenwriter Agent",
+    "debugDirectorAgent": "Debug Director Agent",
+    "debugCinematographerAgent": "Debug Cinematographer Agent",
+    "debugArtDirectorAgent": "Debug Art Director Agent"
+  },
+  "dashboardHeader": {
+    "title": "AI Film Creation Workbench",
+    "currentProject": "Current Project",
+    "status": "Status",
+    "logout": "Logout"
+  },
+  "dashboardPage": {
+    "loading": "Loading your project...",
+    "loadError": "Failed to load project. Please check your network connection and refresh the page. If you are not logged in, please log in first.",
+    "directorOutputWarningTitle": "Warning: Director Agent output format is incorrect",
+    "directorOutputWarningDescription": "The AI output may not be in standard JSON format. Please check and edit it manually before saving."
+  },
+  "selectedShotDetails": {
+    "cinematographerPlan": "Cinematographer Agent Plan",
+    "artDirectorPlan": "Art Director Agent Plan"
+  },
+  "footer": {
+    "copyright": "All rights reserved",
+    "license": "Film and television works are licensed under CC BY-NC 4.0. Commercial use requires additional authorization.",
+    "poweredBy": "Powered by Lovable AI ❤️"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  }
+}

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Project } from '@/hooks/useProject';
 
@@ -9,13 +10,14 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) => {
+  const { t } = useTranslation();
   return (
     <header className="mb-12 text-center">
-      <h1 className="text-5xl font-bold text-primary">AI电影创作工作台</h1>
+      <h1 className="text-5xl font-bold text-primary">{t('dashboardHeader.title')}</h1>
       <p className="text-xl text-muted-foreground mt-2">
-        当前项目: <span className="font-semibold">{project.title}</span> (状态: {project.status})
+        {t('dashboardHeader.currentProject')}: <span className="font-semibold">{project.title}</span> ({t('dashboardHeader.status')}: {project.status})
       </p>
-      <Button onClick={onLogout} variant="outline" className="mt-4">登出</Button>
+      <Button onClick={onLogout} variant="outline" className="mt-4">{t('dashboardHeader.logout')}</Button>
     </header>
   );
 };

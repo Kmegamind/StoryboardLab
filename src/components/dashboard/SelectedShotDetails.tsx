@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SelectedShotActionsCard from '@/components/dashboard/SelectedShotActionsCard';
 import AgentAnalysisCard from '@/components/dashboard/AgentAnalysisCard';
 import { Camera, Palette } from 'lucide-react';
@@ -32,6 +33,7 @@ const SelectedShotDetails: React.FC<SelectedShotDetailsProps> = ({
     isLoadingArtDirector,
     artDirectorPlan,
 }) => {
+    const { t } = useTranslation();
     return (
         <>
             <SelectedShotActionsCard
@@ -46,13 +48,13 @@ const SelectedShotDetails: React.FC<SelectedShotDetailsProps> = ({
             />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                 <AgentAnalysisCard
-                    title="摄像 Agent 方案"
+                    title={t('selectedShotDetails.cinematographerPlan')}
                     isLoading={isLoadingCinematographer}
                     analysis={cinematographerPlan}
                     icon={<Camera className="h-6 w-6 text-primary" />}
                 />
                 <AgentAnalysisCard
-                    title="美术指导 Agent 方案"
+                    title={t('selectedShotDetails.artDirectorPlan')}
                     isLoading={isLoadingArtDirector}
                     analysis={artDirectorPlan}
                     icon={<Palette className="h-6 w-6 text-primary" />}
