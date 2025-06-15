@@ -13,7 +13,7 @@ const Hero = () => {
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-red-500 to-amber-500">
             CinemaAI Studio
           </span>
         </h1>
@@ -33,7 +33,7 @@ const Hero = () => {
           </Button>
         </div>
         <p className="mt-12 text-sm text-muted-foreground">
-          如果您有手册中提到的 `cinemaai-banner.png` 图片，请上传它，我可以将其设置为更具吸引力的背景。
+          您可以上传一张图片作为背景，让页面更具吸引力。
         </p>
       </div>
     </section>
@@ -41,3 +41,4 @@ const Hero = () => {
 };
 
 export default Hero;
+

@@ -16,7 +16,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%; /* Brighter blue for primary actions */
+    --primary: 24.6 95% 53.1%; /* New Orange Primary */
     --primary-foreground: 222.2 47.4% 11.2%; /* Dark text on primary */
 
     --secondary: 217.2 32.6% 17.5%;
@@ -33,7 +33,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%; /* Ring color to match primary */
+    --ring: 24.6 95% 53.1%; /* Ring color to match primary */
 
     --radius: 0.5rem;
 
@@ -65,3 +65,4 @@
     @apply py-16 md:py-24;
   }
 }
+
