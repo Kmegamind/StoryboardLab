@@ -16,6 +16,7 @@ import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./i18n"; // Import i18n configuration
 import DashboardPage from './pages/DashboardPage';
+import TestAgentsPage from "./pages/agents/TestAgentsPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/agents/director" element={<ProtectedRoute><AppLayout><DirectorAgentPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/cinematographer" element={<ProtectedRoute><AppLayout><CinematographerAgentPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/art-director" element={<ProtectedRoute><AppLayout><ArtDirectorAgentPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/agents/test-config" element={<ProtectedRoute><AppLayout><TestAgentsPage /></AppLayout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
           </Routes>

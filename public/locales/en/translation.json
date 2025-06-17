@@ -1,4 +1,3 @@
-
 {
   "navbar": {
     "agents": "Agents",
@@ -7,10 +6,7 @@
     "directorAgent": "Director Agent",
     "cinematographerAgent": "Cinematographer Agent",
     "artDirectorAgent": "Art Director Agent",
-    "testScreenwriterAgent": "Test Screenwriter Agent",
-    "testDirectorAgent": "Test Director Agent",
-    "testCinematographerAgent": "Test Cinematographer Agent",
-    "testArtDirectorAgent": "Test Art Director Agent"
+    "testAgentConfig": "Agent Configuration Management"
   },
   "dashboardHeader": {
     "title": "AI Film Creation Workbench",

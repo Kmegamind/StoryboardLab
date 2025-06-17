@@ -32,10 +32,7 @@ const Navbar = () => {
   ];
 
   const testAgentNavLinks = [
-    { to: '/agents/screenwriter', label: t('navbar.testScreenwriterAgent') },
-    { to: '/agents/director', label: t('navbar.testDirectorAgent') },
-    { to: '/agents/cinematographer', label: t('navbar.testCinematographerAgent') },
-    { to: '/agents/art-director', label: t('navbar.testArtDirectorAgent') },
+    { to: '/agents/test-config', label: t('navbar.testAgentConfig') },
   ];
 
   useEffect(() => {
@@ -93,7 +90,7 @@ const Navbar = () => {
                   {t('navbar.agents')} <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
+              <DropdownMenuContent className="w-56 bg-background border-border shadow-lg">
                 {agentNavLinks.map((link) => (
                   <DropdownMenuItem key={link.to} asChild className="hover:bg-muted/50 cursor-pointer">
                     <Link to={link.to} className="w-full text-foreground hover:text-primary">
@@ -103,14 +100,14 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* Test Agent Links Dropdown */}
+            {/* Test Agent Config Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
                   {t('navbar.testAgents')} <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-background border-border shadow-lg"> {/* Ensure dropdown has background */}
+              <DropdownMenuContent className="w-56 bg-background border-border shadow-lg">
                 {testAgentNavLinks.map((link) => (
                   <DropdownMenuItem key={link.to} asChild className="hover:bg-muted/50 cursor-pointer">
                     <Link to={link.to} className="w-full text-foreground hover:text-primary">
@@ -145,7 +142,7 @@ const Navbar = () => {
             {agentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
-            {/* Test Agent Links in Mobile Menu */}
+            {/* Test Agent Config in Mobile Menu */}
             <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.testAgents')}:</p>
             {testAgentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
