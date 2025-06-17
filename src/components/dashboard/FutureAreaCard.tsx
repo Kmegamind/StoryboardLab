@@ -39,57 +39,97 @@ const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
             正在加载分镜...
           </div>
         ) : savedShots.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">镜号</TableHead>
-                <TableHead className="w-[120px]">景别</TableHead>
-                <TableHead>画面内容</TableHead>
-                <TableHead className="w-[100px]">预估时长</TableHead>
-                <TableHead className="w-[120px] text-center">选择</TableHead>
-                <TableHead className="w-[80px] text-center">存档</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {savedShots.map((shot) => (
-                <TableRow 
-                  key={shot.id}
-                  className={cn(shot.id === selectedShotId ? "bg-primary/10" : "", "hover:bg-muted/50")}
-                  onClick={() => onSelectShot(shot)}
-                  style={{cursor: 'pointer'}}
-                >
-                  <TableCell>{shot.shot_number || 'N/A'}</TableCell>
-                  <TableCell>{shot.shot_type || 'N/A'}</TableCell>
-                  <TableCell className="max-w-xs truncate" title={shot.scene_content || undefined}>
-                    {shot.scene_content || '无内容'}
-                  </TableCell>
-                  <TableCell>{shot.estimated_duration || 'N/A'}</TableCell>
-                  <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <Button 
-                      variant={shot.id === selectedShotId ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => onSelectShot(shot)}
-                      className="w-full"
-                    >
-                      {shot.id === selectedShotId ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
-                      {shot.id === selectedShotId ? '已选择' : '选择'}
-                    </Button>
-                  </TableCell>
-                  <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => onToggleArchive(shot)}
-                      title="存档此分镜"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px]">镜号</TableHead>
+                  <TableHead className="w-[80px]">景别</TableHead>
+                  <TableHead className="min-w-[200px]">画面内容</TableHead>
+                  <TableHead className="w-[120px]">台词</TableHead>
+                  <TableHead className="w-[80px]">预估时长</TableHead>
+                  <TableHead className="w-[100px]">运镜方式</TableHead>
+                  <TableHead className="w-[120px]">音效/音乐</TableHead>
+                  <TableHead className="w-[100px]">画面风格</TableHead>
+                  <TableHead className="w-[100px]">关键道具</TableHead>
+                  <TableHead className="w-[120px]">导演注释</TableHead>
+                  <TableHead className="w-[80px] text-center">选择</TableHead>
+                  <TableHead className="w-[60px] text-center">存档</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {savedShots.map((shot) => (
+                  <TableRow 
+                    key={shot.id}
+                    className={cn(shot.id === selectedShotId ? "bg-primary/10" : "", "hover:bg-muted/50")}
+                    onClick={() => onSelectShot(shot)}
+                    style={{cursor: 'pointer'}}
+                  >
+                    <TableCell className="font-medium">{shot.shot_number || 'N/A'}</TableCell>
+                    <TableCell>{shot.shot_type || 'N/A'}</TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.scene_content || undefined}>
+                        {shot.scene_content || '无内容'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.dialogue || undefined}>
+                        {shot.dialogue || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell>{shot.estimated_duration || 'N/A'}</TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.camera_movement || undefined}>
+                        {shot.camera_movement || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.sound_music || undefined}>
+                        {shot.sound_music || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.visual_style || undefined}>
+                        {shot.visual_style || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.key_props || undefined}>
+                        {shot.key_props || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={shot.director_notes || undefined}>
+                        {shot.director_notes || '无'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant={shot.id === selectedShotId ? "default" : "outline"} 
+                        size="sm" 
+                        onClick={() => onSelectShot(shot)}
+                        className="w-full"
+                      >
+                        {shot.id === selectedShotId ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
+                        {shot.id === selectedShotId ? '已选择' : '选择'}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => onToggleArchive(shot)}
+                        title="存档此分镜"
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
           <p className="text-muted-foreground text-center py-8">
             您还没有保存任何分镜，或者您需要先登录。请先使用导演 Agent 生成并保存分镜。
