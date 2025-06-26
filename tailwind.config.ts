@@ -53,9 +53,9 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				success: 'hsl(var(--success))',
-				warning: 'hsl(var(--warning))',
-				info: 'hsl(var(--info))',
+        'brand-purple': 'hsl(var(--brand-purple))',
+        'brand-pink': 'hsl(var(--brand-pink))',
+        'brand-cyan': 'hsl(var(--brand-cyan))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,24 +67,19 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
-			transitionTimingFunction: {
-				'jelly': 'cubic-bezier(0.3, 0.7, 0.4, 1.5)',
-			},
+      transitionTimingFunction: {
+        'jelly': 'cubic-bezier(0.3, 0.7, 0.4, 1.5)',
+      },
 			boxShadow: {
-				'futuristic-inset': 'inset 4px 4px 8px hsl(var(--primary-dark)), inset -4px -4px 8px hsl(var(--primary-light))',
-				'enhanced': '0 2px 8px rgba(0,0,0,0.3)',
-			},
-			dropShadow: {
-				'futuristic-glow': '0 0 20px hsl(var(--primary) / 0.7)',
-			},
+        'futuristic-inset': 'inset 4px 4px 8px hsl(var(--primary-dark)), inset -4px -4px 8px hsl(var(--primary-light))',
+      },
+      dropShadow: {
+        'futuristic-glow': '0 0 20px hsl(var(--primary) / 0.7)',
+      },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
-			},
-			spacing: {
-				'18': '4.5rem',
-				'88': '22rem',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -103,21 +98,21 @@ export default {
 						height: '0'
 					}
 				},
-				'gradient-xy': {
-					'0%, 100%': {
-						'background-size': '400% 400%',
-						'background-position': 'left center',
-					},
-					'50%': {
-						'background-size': '200% 200%',
-						'background-position': 'right center',
-					},
-				},
+        'gradient-xy': { // Added for Hero background animation
+          '0%, 100%': {
+            'background-size': '400% 400%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
+          },
+        },
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'gradient-xy': 'gradient-xy 15s ease infinite',
+        'gradient-xy': 'gradient-xy 15s ease infinite', // Added for Hero background animation
 			}
 		}
 	},
