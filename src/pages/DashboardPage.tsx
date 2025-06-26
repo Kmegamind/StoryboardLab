@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -14,10 +15,8 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
-import { useTranslation } from 'react-i18next';
 
 const DashboardPage = () => {
-  const { t } = useTranslation();
   const { project, isLoadingProject, updateProject } = useProject();
   const navigate = useNavigate();
 
@@ -122,8 +121,8 @@ const DashboardPage = () => {
         await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
       } catch (e: any) {
         toast({
-          title: t('dashboardPage.directorOutputWarningTitle'),
-          description: t('dashboardPage.directorOutputWarningDescription'),
+          title: '警告：导演智能体输出格式不正确',
+          description: 'AI输出可能不是标准JSON格式。请检查并手动编辑后再保存。',
           variant: "destructive",
           duration: 9000,
         });
@@ -143,7 +142,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-        toast({ title: t('auth.logoutError'), description: error.message, variant: 'destructive' });
+        toast({ title: '退出登录失败', description: error.message, variant: 'destructive' });
     } else {
         navigate('/auth');
     }
@@ -153,7 +152,7 @@ const DashboardPage = () => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4 text-lg">{t('dashboardPage.loading')}</p>
+        <p className="ml-4 text-lg">正在加载您的项目...</p>
       </div>
     );
   }
@@ -161,7 +160,7 @@ const DashboardPage = () => {
   if (!project) {
       return (
         <div className="flex justify-center items-center min-h-screen">
-          <p className="text-lg text-destructive">{t('dashboardPage.loadError')}</p>
+          <p className="text-lg text-destructive">加载项目失败。请检查网络连接并刷新页面。如果您未登录，请先登录。</p>
         </div>
       );
   }

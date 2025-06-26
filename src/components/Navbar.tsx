@@ -1,38 +1,32 @@
+
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Film, Menu, X, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom'; // Import Link for internal navigation
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
-import { Button } from "@/components/ui/button"; // Import Button for trigger styling
-import LanguageSwitcher from './LanguageSwitcher';
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
-  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Updated mainNavLinks to remove the specified items
   const mainNavLinks = [
-    // { href: '/#overview', label: '产品概述', isRouterLink: false },
-    // { href: '/#features', label: '核心功能', isRouterLink: false },
-    // { href: '/#technology', label: '技术亮点', isRouterLink: false },
-    // { href: '/#contact', label: '联系我们', isRouterLink: false },
+    // 主导航链接已移除，如需要可重新添加
   ];
 
   const agentNavLinks = [
-    { to: '/agents/screenwriter', label: t('navbar.screenwriterAgent') },
-    { to: '/agents/director', label: t('navbar.directorAgent') },
-    { to: '/agents/cinematographer', label: t('navbar.cinematographerAgent') },
-    { to: '/agents/art-director', label: t('navbar.artDirectorAgent') },
+    { to: '/agents/screenwriter', label: '编剧智能体' },
+    { to: '/agents/director', label: '导演智能体' },
+    { to: '/agents/cinematographer', label: '摄影师智能体' },
+    { to: '/agents/art-director', label: '美术指导智能体' },
   ];
 
   const testAgentNavLinks = [
-    { to: '/agents/test-config', label: t('navbar.testAgentConfig') },
+    { to: '/agents/test-config', label: '智能体配置管理' },
   ];
 
   useEffect(() => {
@@ -55,9 +49,6 @@ const Navbar = () => {
         </Link>
       );
     }
-    // Only render if href is defined, which it won't be for the removed items if array is empty.
-    // If mainNavLinks becomes empty, this component won't be called for those items.
-    // For safety, we can add a check here.
     if (!href) return null;
     return (
       <a
@@ -79,15 +70,14 @@ const Navbar = () => {
             <span>CinemaAI Studio</span>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
-            {/* Render mainNavLinks only if it's not empty */}
             {mainNavLinks.length > 0 && mainNavLinks.map((link) => (
               <NavLinkItem key={link.label} href={link.href} label={link.label} isRouterLink={link.isRouterLink} />
             ))}
-            {/* Agent Links Dropdown */}
+            {/* 智能体链接下拉 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
-                  {t('navbar.agents')} <ChevronDown className="ml-1 h-4 w-4" />
+                  智能体 <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border-border shadow-lg">
@@ -100,11 +90,11 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* Test Agent Config Dropdown */}
+            {/* 测试智能体配置下拉 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:text-primary hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium px-0">
-                  {t('navbar.testAgents')} <ChevronDown className="ml-1 h-4 w-4" />
+                  测试智能体 <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border-border shadow-lg">
@@ -117,7 +107,6 @@ const Navbar = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <LanguageSwitcher />
           </div>
           <div className="md:hidden">
             <button
@@ -129,27 +118,23 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      {/* Mobile Menu */}
+      {/* 移动端菜单 */}
       {isMenuOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-md pb-4">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col space-y-4">
-            {/* Render mainNavLinks in mobile only if it's not empty */}
             {mainNavLinks.length > 0 && mainNavLinks.map((link) => (
               <NavLinkItem key={link.label} href={link.href} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={link.isRouterLink} />
             ))}
-            {/* Agent Links in Mobile Menu */}
-            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.agents')}:</p>
+            {/* 移动端智能体链接 */}
+            <p className="text-muted-foreground px-2 pt-2 text-sm">智能体:</p>
             {agentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
-            {/* Test Agent Config in Mobile Menu */}
-            <p className="text-muted-foreground px-2 pt-2 text-sm">{t('navbar.testAgents')}:</p>
+            {/* 移动端测试智能体配置 */}
+            <p className="text-muted-foreground px-2 pt-2 text-sm">测试智能体:</p>
             {testAgentNavLinks.map((link) => (
                <NavLinkItem key={link.to} to={link.to} label={link.label} onClick={() => setIsMenuOpen(false)} isRouterLink={true}/>
             ))}
-            <div className="pt-4 mt-4 border-t border-border">
-              <LanguageSwitcher />
-            </div>
           </div>
         </div>
       )}

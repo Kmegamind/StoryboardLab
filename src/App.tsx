@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,11 +11,10 @@ import ScreenwriterAgentPage from "./pages/agents/ScreenwriterAgentPage";
 import DirectorAgentPage from "./pages/agents/DirectorAgentPage";
 import CinematographerAgentPage from "./pages/agents/CinematographerAgentPage";
 import ArtDirectorAgentPage from "./pages/agents/ArtDirectorAgentPage";
-import Navbar from "./components/Navbar"; // Import Navbar
-import Footer from "./components/Footer"; // Import Footer
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import "./i18n"; // Import i18n configuration
 import DashboardPage from './pages/DashboardPage';
 import TestAgentsPage from "./pages/agents/TestAgentsPage";
 

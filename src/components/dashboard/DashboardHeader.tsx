@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Project } from '@/hooks/useProject';
 
@@ -9,15 +8,24 @@ interface DashboardHeaderProps {
   onLogout: () => void;
 }
 
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'new': return '新建';
+    case 'writing': return '编剧中';
+    case 'directing': return '导演中';
+    case 'completed': return '已完成';
+    default: return status;
+  }
+};
+
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) => {
-  const { t } = useTranslation();
   return (
     <header className="mb-12 text-center">
-      <h1 className="text-5xl font-bold text-primary">{t('dashboardHeader.title')}</h1>
+      <h1 className="text-5xl font-bold text-primary">AI影视创作工作台</h1>
       <p className="text-xl text-muted-foreground mt-2">
-        {t('dashboardHeader.currentProject')}: <span className="font-semibold">{project.title}</span> ({t('dashboardHeader.status')}: {t(`projectStatuses.${project.status}`, project.status)})
+        当前项目: <span className="font-semibold">{project.title}</span> (状态: {getStatusText(project.status)})
       </p>
-      <Button onClick={onLogout} variant="outline" className="mt-4">{t('dashboardHeader.logout')}</Button>
+      <Button onClick={onLogout} variant="outline" className="mt-4">退出登录</Button>
     </header>
   );
 };

@@ -1,19 +1,17 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
-  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
   return (
     <footer className="bg-secondary py-8 border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground">
-        <p>&copy; {currentYear} CinemaAI Studio. {t('footer.copyright')}</p>
+        <p>&copy; {currentYear} CinemaAI Studio. 版权所有</p>
         <p className="text-sm mt-2">
-          {t('footer.license')}
+          影视作品采用 CC BY-NC 4.0 许可协议。商业使用需额外授权。
         </p>
         <p className="text-sm mt-2">
-          {t('footer.poweredBy')}
+          由 Lovable AI ❤️ 强力驱动
         </p>
       </div>
     </footer>

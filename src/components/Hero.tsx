@@ -2,11 +2,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button'; 
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 const Hero = () => {
-  const { t } = useTranslation();
-
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Gradient Animation */}
@@ -21,18 +18,18 @@ const Hero = () => {
           </span>
         </h1>
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-          {t('hero.subtitle', '革命性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。')}
+          革命性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。
         </p>
         <p className="text-2xl md:text-3xl font-semibold text-primary mb-12">
-          {t('hero.tagline', '让每个故事都能绽放视觉生命力')} ✨
+          让每个故事都能绽放视觉生命力 ✨
         </p>
         <div className="flex justify-center items-center">
           <Button size="lg" asChild>
-            <Link to="/dashboard">{t('hero.cta.start', '开始创作')}</Link>
+            <Link to="/dashboard">开始创作</Link>
           </Button>
         </div>
         <p className="mt-12 text-sm text-muted-foreground">
-          {t('hero.imageUploadHint', '您可以上传一张图片作为背景，让页面更具吸引力。')}
+          您可以上传一张图片作为背景，让页面更具吸引力。
         </p>
       </div>
     </section>
