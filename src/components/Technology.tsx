@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Cpu, Layers, Share2, BarChartBig } from 'lucide-react'; // Replaced pie chart with BarChartBig
+import { Cpu, Layers, Share2, BarChartBig } from 'lucide-react';
 
 const techHighlights = [
   {
@@ -19,7 +19,7 @@ const techHighlights = [
     description: '深度集成ComfyUI工作流，实现视觉资产的批量化、标准化生产。',
   },
   {
-    icon: BarChartBig, // Placeholder for AI service distribution visualization
+    icon: BarChartBig,
     title: '整合多种AI服务',
     description: '有效整合Stable Diffusion, Vidu视频生成等多种AI能力，提供一站式解决方案。',
   },
@@ -27,26 +27,26 @@ const techHighlights = [
 
 const Technology = () => {
   return (
-    <section id="technology" className="bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="technology" className="bg-background py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-primary">技术亮点</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">技术亮点</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             CinemaAI Studio 由前沿技术驱动，确保高效与创新的完美结合。
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-10">
+        <div className="grid md:grid-cols-2 gap-6">
           {techHighlights.map((tech, index) => (
-            <div key={index} className="bg-secondary p-8 rounded-xl shadow-xl hover:shadow-primary/20 transition-shadow duration-300">
+            <div key={index} className="card-enhanced hover-lift">
               <div className="flex items-center mb-4">
-                <tech.icon className="h-10 w-10 text-primary mr-4" />
-                <h3 className="text-2xl font-semibold text-foreground">{tech.title}</h3>
+                <tech.icon className="h-8 w-8 text-primary mr-4" />
+                <h3 className="text-2xl font-medium text-foreground">{tech.title}</h3>
               </div>
               <p className="text-muted-foreground leading-relaxed">{tech.description}</p>
             </div>
           ))}
         </div>
-         <p className="mt-12 text-center text-sm text-muted-foreground">
+        <p className="mt-12 text-center text-sm text-muted-foreground">
           产品手册中提及的系统架构图、ComfyUI流程图和AI服务分布饼图，由于其复杂性，暂未在此页面直接展示。后续可以考虑将其作为静态图片或交互元素加入。
         </p>
       </div>
