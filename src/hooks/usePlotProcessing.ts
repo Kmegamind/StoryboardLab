@@ -2,14 +2,13 @@
 import { useState } from 'react';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
 import { toast } from "@/hooks/use-toast";
-import i18n from '@/i18n';
 
 export const usePlotProcessing = () => {
   const [isLoadingScreenwriter, setIsLoadingScreenwriter] = useState<boolean>(false);
 
   const processPlotWithScreenwriter = async (currentPlot: string): Promise<string | null> => {
     if (!currentPlot) {
-      toast({ title: i18n.t('prompts.plotRequired'), variant: "destructive" });
+      toast({ title: '请输入故事情节', variant: "destructive" });
       return null;
     }
     setIsLoadingScreenwriter(true);
@@ -19,16 +18,16 @@ export const usePlotProcessing = () => {
 
       if (result) {
         toast({
-          title: i18n.t('prompts.screenwriter.successTitle'),
-          description: i18n.t('prompts.screenwriter.successDescription'),
+          title: '编剧处理完成',
+          description: '故事情节已成功转化为初步剧本',
         });
         return result;
       } else {
-        toast({ title: i18n.t('prompts.screenwriter.errorTitle'), description: i18n.t('prompts.screenwriter.errorDescription'), variant: "destructive" });
+        toast({ title: '编剧处理失败', description: '请检查网络连接或稍后重试', variant: "destructive" });
         return null;
       }
     } catch (error: any) {
-      toast({ title: i18n.t('prompts.screenwriter.exceptionTitle'), description: error.message, variant: "destructive" });
+      toast({ title: '编剧处理异常', description: error.message, variant: "destructive" });
       return null;
     } finally {
       setIsLoadingScreenwriter(false);

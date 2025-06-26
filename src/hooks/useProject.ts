@@ -2,7 +2,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import i18n from '@/i18n';
 
 // Manually defining types as a workaround for potential type generation issues.
 export type Project = {
@@ -48,7 +47,7 @@ export const useProject = () => {
             if (projects && projects.length > 0) {
                 setProject(projects[0]);
             } else {
-                const newProjectData: ProjectInsert = { user_id: user.id, title: `${i18n.t('prompts.project.newProjectTitle')} ${new Date().toLocaleDateString()}` };
+                const newProjectData: ProjectInsert = { user_id: user.id, title: `新项目 ${new Date().toLocaleDateString()}` };
                 const { data: newProject, error: createError } = await (supabase
                     .from('projects') as any) // Using 'as any' to bypass type issue
                     .insert([newProjectData])
@@ -58,7 +57,7 @@ export const useProject = () => {
                 setProject(newProject);
             }
         } catch (error: any) {
-            toast({ title: i18n.t('prompts.project.loadOrCreateError'), description: error.message, variant: 'destructive' });
+            toast({ title: '加载或创建项目时出错', description: error.message, variant: 'destructive' });
             setProject(null);
         } finally {
             setIsLoading(false);
@@ -67,7 +66,7 @@ export const useProject = () => {
 
     const updateProject = useCallback(async (updates: Partial<ProjectUpdate>) => {
         if (!project) {
-            toast({ title: i18n.t('prompts.project.updateErrorTitle'), description: i18n.t('prompts.project.updateErrorDescription'), variant: 'destructive' });
+            toast({ title: '更新项目失败', description: '当前没有可用的项目', variant: 'destructive' });
             return null;
         }
         try {
@@ -81,12 +80,12 @@ export const useProject = () => {
             if (error) throw error;
 
             setProject(updatedProject);
-            toast({ title: i18n.t('prompts.project.updatedTitle') });
+            toast({ title: '项目已更新' });
             return updatedProject;
 
         } catch (error: any)
         {
-            toast({ title: i18n.t('prompts.project.updateFailedTitle'), description: error.message, variant: 'destructive' });
+            toast({ title: '项目更新失败', description: error.message, variant: 'destructive' });
             return null;
         }
     }, [project]);
