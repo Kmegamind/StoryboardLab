@@ -16,10 +16,10 @@
     --popover: 210 11% 15%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 272 90% 60%; /* Purple gradient base */
+    --primary: 166 100% 33%; /* Green - #00A67E */
     --primary-foreground: 0 0% 100%;
-    --primary-dark: 272 90% 50%;
-    --primary-light: 272 90% 70%;
+    --primary-dark: 166 100% 28%;
+    --primary-light: 166 100% 38%;
 
     --secondary: 0 0% 20%; /* #333333 */
     --secondary-foreground: 0 0% 100%;
@@ -35,9 +35,9 @@
 
     --border: 0 0% 20%; /* #333333 */
     --input: 0 0% 20%; /* #333333 */
-    --ring: 272 90% 60%;
+    --ring: 166 100% 33%;
 
-    --radius: 0.375rem; /* 6px */
+    --radius: 0.5rem; /* 8px */
 
     /* Custom functional colors */
     --success: 166 100% 33%; /* #00A67E */
@@ -64,9 +64,9 @@
 @layer components {
   /* Button Styles */
   .btn-primary {
-    @apply bg-gradient-to-br from-purple-500 to-purple-600 text-white;
+    @apply bg-primary text-primary-foreground;
     @apply px-4 py-2 rounded-md font-medium;
-    @apply transition-all duration-200 hover:from-purple-600 hover:to-purple-700;
+    @apply transition-all duration-200 hover:bg-primary/90;
     @apply transform hover:-translate-y-0.5;
   }
 
@@ -79,7 +79,7 @@
   /* Card Styles */
   .card-enhanced {
     @apply bg-card border border-border rounded-lg p-6;
-    @apply shadow-lg shadow-black/30;
+    @apply shadow-enhanced;
     @apply transition-all duration-200;
   }
 

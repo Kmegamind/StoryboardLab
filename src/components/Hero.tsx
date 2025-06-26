@@ -11,12 +11,12 @@ const Hero = () => {
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Gradient Animation */}
       <div className="absolute inset-0 -z-10">
-        <div className="relative w-full h-full bg-gradient-to-br from-purple-900/20 via-purple-600/10 to-purple-800/20 grainy-noise"></div>
+        <div className="relative w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/20 grainy-noise"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-7xl">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-primary/80">
             CinemaAI Studio
           </span>
         </h1>
