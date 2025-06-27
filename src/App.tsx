@@ -11,6 +11,7 @@ import DashboardPage from "./pages/DashboardPage";
 import TestAgentsPage from "./pages/agents/TestAgentsPage";
 import UserSettingsPage from "./pages/UserSettingsPage";
 import ShotPromptLabPage from "./pages/ShotPromptLabPage";
+import VisualOverviewPage from "./pages/VisualOverviewPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/test-agents" element={<TestAgentsPage />} />
           <Route path="/settings" element={<UserSettingsPage />} />
           <Route path="/shot-lab/:shotId" element={<ShotPromptLabPage />} />
+          <Route path="/visual-overview" element={<VisualOverviewPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

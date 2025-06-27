@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, Archive, Eye, Camera, ChevronRight } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 type Shot = Tables<'structured_shots'>;
 
@@ -24,6 +24,8 @@ const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
   selectedShotId,
   onToggleArchive,
 }) => {
+  const navigate = useNavigate();
+
   // Group shots by main shots and their perspective variants
   const groupedShots = React.useMemo(() => {
     const mainShots = savedShots.filter(shot => shot.perspective_type === 'main');
@@ -123,11 +125,23 @@ const FutureAreaCard: React.FC<FutureAreaCardProps> = ({
   );
 
   return (
-    <Card className="mt-12">
+    <Card className="mb-8">
       <CardHeader>
-        <CardTitle className="text-2xl">已保存分镜列表</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>已生成的分镜</CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/visual-overview')}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              视觉总览
+            </Button>
+          </div>
+        </div>
         <CardDescription>
-          这里展示了您已保存到数据库的分镜。请选择一个分镜以生成图像/视频的详细提示词。主镜头下方会显示其视角变体。
+          管理您的分镜，点击选择分镜进行详细查看和编辑
         </CardDescription>
       </CardHeader>
       <CardContent>
