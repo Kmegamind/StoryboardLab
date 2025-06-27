@@ -162,14 +162,15 @@ export const useVisualOverview = () => {
     if (selectedShots.length === 0) return;
 
     try {
+      const newArchivedStatus = filters.status !== 'archived';
       const { error } = await supabase
         .from('structured_shots')
-        .update({ is_archived: !filters.status !== 'archived' })
+        .update({ is_archived: newArchivedStatus })
         .in('id', selectedShots);
 
       if (error) throw error;
 
-      toast({ title: `已批量${filters.status === 'archived' ? '恢复' : '存档'} ${selectedShots.length} 个分镜` });
+      toast({ title: `已批量${newArchivedStatus ? '存档' : '恢复'} ${selectedShots.length} 个分镜` });
       setSelectedShots([]);
       fetchShotsWithPrompts();
     } catch (error: any) {
