@@ -1,104 +1,174 @@
 
-import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 
 const AuthPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { toast } = useToast();
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            toast({ title: '登录失败', description: error.message, variant: 'destructive' });
-        } else {
-            toast({ title: '登录成功' });
-            navigate('/create');
-        }
-        setLoading(false);
-    };
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        // 登录成功后跳转到工作台
+        navigate('/dashboard');
+      }
+    });
 
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        const { error } = await supabase.auth.signUp({ 
-            email, 
-            password,
-            options: {
-                emailRedirectTo: `${window.location.origin}/create`,
-            }
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        if (error) {
-            toast({ title: '注册失败', description: error.message, variant: 'destructive' });
-        } else {
-            toast({ title: '注册成功', description: '请检查您的邮箱并点击确认链接完成注册' });
+        if (error) throw error;
+        toast({ title: '登录成功', description: '欢迎回到分镜实验室' });
+      } else {
+        if (password !== confirmPassword) {
+          throw new Error('密码不匹配');
         }
-        setLoading(false);
-    };
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+        if (error) throw error;
+        toast({ 
+          title: '注册成功', 
+          description: '欢迎加入分镜实验室！请检查邮箱验证链接。' 
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: isLogin ? '登录失败' : '注册失败',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
-            <Tabs defaultValue="login" className="w-[400px]">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">登录</TabsTrigger>
-                    <TabsTrigger value="signup">注册</TabsTrigger>
-                </TabsList>
-                <TabsContent value="login">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>登录账户</CardTitle>
-                            <CardDescription>输入您的邮箱和密码登录账户</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="email">邮箱</Label>
-                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                                </div>
-                                <div>
-                                    <Label htmlFor="password">密码</Label>
-                                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                                </div>
-                                <Button type="submit" disabled={loading} className="w-full">{loading ? '登录中...' : '登录'}</Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="signup">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>创建账户</CardTitle>
-                            <CardDescription>创建新账户以保存您的创作内容</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSignup} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="signup-email">邮箱</Label>
-                                    <Input id="signup-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                                </div>
-                                <div>
-                                    <Label htmlFor="signup-password">密码</Label>
-                                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                                </div>
-                                <Button type="submit" disabled={loading} className="w-full">{loading ? '注册中...' : '注册'}</Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            {isLogin ? '登录' : '注册'} 分镜实验室
+          </CardTitle>
+          <CardDescription>
+            {isLogin ? '欢迎回到AI影视创作工作台' : '加入AI影视创作工作台'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">邮箱</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="your@email.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">密码</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="输入密码"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">确认密码</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    placeholder="再次输入密码"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                '处理中...'
+              ) : isLogin ? (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  登录
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  注册
+                </>
+              )}
+            </Button>
+          </form>
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-muted-foreground"
+            >
+              {isLogin ? '没有账号？点击注册' : '已有账号？点击登录'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
 
 export default AuthPage;
