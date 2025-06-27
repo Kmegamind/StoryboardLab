@@ -209,7 +209,7 @@ const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="all">全部状态</SelectItem>
               <SelectItem value="active">活跃</SelectItem>
               <SelectItem value="archived">已存档</SelectItem>
             </SelectContent>
@@ -281,7 +281,9 @@ const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    暂无数据
+                    {filters.status !== 'all' || filters.searchText || filters.shotType || filters.perspectiveType !== 'all' 
+                      ? '当前筛选条件下暂无数据，请尝试调整筛选条件' 
+                      : '暂无分镜数据，请先创建分镜'}
                   </TableCell>
                 </TableRow>
               )}

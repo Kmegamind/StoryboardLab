@@ -4,7 +4,9 @@ import { useVisualOverview } from '@/hooks/useVisualOverview';
 import VisualOverviewLayout from '@/components/visual-overview/VisualOverviewLayout';
 import VisualOverviewTable from '@/components/visual-overview/VisualOverviewTable';
 import VisualOverviewToolbar from '@/components/visual-overview/VisualOverviewToolbar';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
 
 const VisualOverviewPage = () => {
   const {
@@ -35,7 +37,36 @@ const VisualOverviewPage = () => {
       <VisualOverviewLayout>
         <div className="flex justify-center items-center min-h-96">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="ml-4">正在加载视觉总览...</p>
+          <p className="ml-4">正在加载分镜数据...</p>
+        </div>
+      </VisualOverviewLayout>
+    );
+  }
+
+  // Show friendly message when no shots are found
+  if (!isLoading && shots.length === 0 && totalCount === 0) {
+    return (
+      <VisualOverviewLayout>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">分镜管理</h1>
+          </div>
+          
+          <Card>
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">暂无分镜数据</h3>
+              <p className="text-muted-foreground mb-4">
+                您还没有创建任何分镜，或者当前筛选条件下没有找到匹配的分镜。
+              </p>
+              <p className="text-sm text-muted-foreground">
+                请检查：
+                <br />• 是否已选择正确的项目
+                <br />• 筛选条件是否过于严格
+                <br />• 是否需要先创建分镜
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </VisualOverviewLayout>
     );
@@ -45,7 +76,12 @@ const VisualOverviewPage = () => {
     <VisualOverviewLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">视觉总览</h1>
+          <div>
+            <h1 className="text-3xl font-bold">分镜管理</h1>
+            <p className="text-muted-foreground mt-1">
+              管理和组织您的项目分镜，共 {totalCount} 个分镜
+            </p>
+          </div>
           <VisualOverviewToolbar
             selectedCount={selectedShots.length}
             onExportPDF={handleExportPDF}
@@ -56,6 +92,20 @@ const VisualOverviewPage = () => {
             isLoading={isLoading}
           />
         </div>
+
+        {totalCount > 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>数据统计</AlertTitle>
+            <AlertDescription>
+              当前显示 {shots.length} 个分镜，总共 {totalCount} 个分镜
+              {filters.status !== 'all' && ` (筛选条件: ${
+                filters.status === 'active' ? '活跃' : 
+                filters.status === 'archived' ? '已存档' : '全部'
+              })`}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <VisualOverviewTable
           shots={shots}

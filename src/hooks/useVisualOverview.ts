@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
@@ -9,7 +8,7 @@ import { exportToPDF, exportToExcel } from '@/utils/visualOverviewExport';
 import { batchArchiveShots, batchSetFinalPrompts } from '@/utils/visualOverviewBatch';
 
 export const useVisualOverview = () => {
-  const { isAuthenticated } = useOptionalAuth();
+  const { isAuthenticated, user } = useOptionalAuth();
   const { project } = useProject();
   const [shots, setShots] = useState<ShotWithPrompts[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +19,7 @@ export const useVisualOverview = () => {
   const pageSize = 50;
   
   const [filters, setFilters] = useState<VisualOverviewFilters>({
-    status: 'active',
+    status: 'all', // 改为默认显示所有分镜
     perspectiveType: 'all',
     shotType: '',
     searchText: '',
@@ -32,7 +31,16 @@ export const useVisualOverview = () => {
   });
 
   const loadShotsWithPrompts = useCallback(async (page: number = 1) => {
-    if (!project?.id || !isAuthenticated) return;
+    console.log('Loading shots with prompts...', { 
+      projectId: project?.id, 
+      isAuthenticated, 
+      userId: user?.id 
+    });
+
+    if (!project?.id || !isAuthenticated) {
+      console.log('Missing requirements:', { projectId: project?.id, isAuthenticated });
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -41,10 +49,16 @@ export const useVisualOverview = () => {
       setTotalCount(result.totalCount);
       setCurrentPage(page);
       
+      console.log('Shots loaded successfully:', { 
+        shotsCount: result.shots.length, 
+        totalCount: result.totalCount 
+      });
+      
       // Load unique shot types for filter
       const types = await getUniqueShotTypes(project.id);
       setUniqueShotTypes(types);
     } catch (error: any) {
+      console.error('Error loading shots:', error);
       toast({
         title: '加载失败',
         description: error.message,
@@ -53,7 +67,7 @@ export const useVisualOverview = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [project?.id, isAuthenticated, filters, sorting]);
+  }, [project?.id, isAuthenticated, user?.id, filters, sorting]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedShots.length === shots.length) {
