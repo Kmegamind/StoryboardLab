@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -21,17 +20,15 @@ const PlotInputCard: React.FC<PlotInputCardProps> = ({
   isLoadingScreenwriter,
   disabled = false,
 }) => {
-  const { t } = useTranslation();
-
   return (
     <Card className="md:col-span-1">
       <CardHeader>
-        <CardTitle>{t('dashboardCards.plotInput.title')}</CardTitle>
-        <CardDescription>{t('dashboardCards.plotInput.description')}</CardDescription>
+        <CardTitle>1. 输入您的故事/情节</CardTitle>
+        <CardDescription>在这里输入您的原创故事、小说片段或核心情节。</CardDescription>
       </CardHeader>
       <CardContent>
         <Textarea
-          placeholder={t('dashboardCards.plotInput.placeholder')}
+          placeholder="例如：在一个赛博朋克都市，一个失忆的侦探必须找回他的过去，同时揭露一个威胁整个城市的阴谋..."
           value={plot}
           onChange={(e) => setPlot(e.target.value)}
           className="min-h-[200px] text-base"
@@ -47,7 +44,7 @@ const PlotInputCard: React.FC<PlotInputCardProps> = ({
           ) : (
             <ArrowRight className="mr-2 h-4 w-4" />
           )}
-          {t('dashboardCards.plotInput.button')}
+          启动编剧 Agent
         </Button>
       </CardContent>
     </Card>
