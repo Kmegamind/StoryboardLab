@@ -25,6 +25,8 @@ const LoginPromptDialog: React.FC<LoginPromptDialogProps> = ({
   const navigate = useNavigate();
 
   const handleLogin = () => {
+    // Store the current path so we can redirect back after login
+    sessionStorage.setItem('redirectAfterLogin', '/create');
     navigate('/auth');
   };
 
