@@ -253,7 +253,7 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
               <Textarea
                 value={currentPrompt}
                 onChange={(e) => setCurrentPrompt(e.target.value)}
-                placeholder="在这里编辑您的提示词，或点击"生成视觉方案"开始..."
+                placeholder="在这里编辑您的提示词，或点击'生成视觉方案'开始..."
                 className="min-h-[400px] font-mono text-sm"
               />
             </CardContent>
