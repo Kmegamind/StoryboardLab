@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -27,23 +26,22 @@ const ShotPromptLabPage = () => {
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
   const {
-    promptVersions,
+    prompts: promptVersions,
     consistencyPrompts,
-    isLoadingVersions,
-    isLoadingConsistency,
-    fetchPromptVersions,
+    isLoading: isLoadingVersions,
+    isSaving: isLoadingConsistency,
+    fetchPrompts: fetchPromptVersions,
     fetchConsistencyPrompts,
-    savePromptVersion,
-    deletePromptVersion,
+    createPromptVersion: savePromptVersion,
+    deletePrompt: deletePromptVersion,
     setFinalVersion,
-    saveConsistencyPrompt,
-    deleteConsistencyPrompt,
-  } = useShotPromptLab();
+    createConsistencyPrompt: saveConsistencyPrompt,
+  } = useShotPromptLab(shotId || '');
 
   useEffect(() => {
     if (shotId && user) {
       fetchShotDetails();
-      fetchPromptVersions(shotId);
+      fetchPromptVersions();
       fetchConsistencyPrompts(user.id);
     }
   }, [shotId, user]);
@@ -148,10 +146,10 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
   const handleSavePrompt = async () => {
     if (!currentPrompt.trim() || !shotId || !user) return;
     
-    const success = await savePromptVersion(shotId, user.id, currentPrompt);
+    const success = await savePromptVersion(currentPrompt);
     if (success) {
       toast({ title: "提示词已保存", description: "已保存为新版本" });
-      fetchPromptVersions(shotId);
+      fetchPromptVersions();
     }
   };
 
