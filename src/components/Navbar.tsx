@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Film, Menu, X, User, LogOut } from 'lucide-react';
+import { Film, Menu, X, User, LogOut, Settings, Wrench } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
@@ -53,7 +54,20 @@ const Navbar = () => {
                       <User className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        设置
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/test-agents" className="flex items-center">
+                        <Wrench className="mr-2 h-4 w-4" />
+                        测试智能体
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       退出登录
@@ -86,6 +100,12 @@ const Navbar = () => {
                 <>
                   <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
                     工作台
+                  </Link>
+                  <Link to="/settings" className="text-muted-foreground hover:text-primary transition-colors">
+                    设置
+                  </Link>
+                  <Link to="/test-agents" className="text-muted-foreground hover:text-primary transition-colors">
+                    测试智能体
                   </Link>
                   <button
                     onClick={handleLogout}

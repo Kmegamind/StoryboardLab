@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -198,7 +197,7 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-black">
       <Navbar />
       <div className="container mx-auto px-4 py-8 pt-24">
-        <DashboardHeader project={project} onLogout={handleLogout} />
+        <DashboardHeader project={project} onLogout={() => {}} />
 
         <ProcessingPipeline
           plot={plot}
