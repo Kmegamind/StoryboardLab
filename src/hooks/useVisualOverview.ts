@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { useProject } from '@/hooks/useProject';
@@ -19,7 +20,7 @@ export const useVisualOverview = () => {
   const pageSize = 50;
   
   const [filters, setFilters] = useState<VisualOverviewFilters>({
-    status: 'all', // 改为默认显示所有分镜
+    status: 'all',
     perspectiveType: 'all',
     shotType: '',
     searchText: '',
@@ -30,15 +31,26 @@ export const useVisualOverview = () => {
     direction: 'asc',
   });
 
+  // Memoize the filter and sorting keys to prevent unnecessary re-renders
+  const filterKey = useMemo(() => 
+    JSON.stringify([filters.status, filters.perspectiveType, filters.shotType, filters.searchText])
+  , [filters.status, filters.perspectiveType, filters.shotType, filters.searchText]);
+
+  const sortingKey = useMemo(() => 
+    JSON.stringify([sorting.field, sorting.direction])
+  , [sorting.field, sorting.direction]);
+
   const loadShotsWithPrompts = useCallback(async (page: number = 1) => {
     console.log('Loading shots with prompts...', { 
       projectId: project?.id, 
-      isAuthenticated, 
-      userId: user?.id 
+      hasProject: !!project,
+      page
     });
 
-    if (!project?.id || !isAuthenticated) {
-      console.log('Missing requirements:', { projectId: project?.id, isAuthenticated });
+    if (!project?.id) {
+      console.log('No project ID available');
+      setShots([]);
+      setTotalCount(0);
       return;
     }
 
@@ -61,13 +73,16 @@ export const useVisualOverview = () => {
       console.error('Error loading shots:', error);
       toast({
         title: '加载失败',
-        description: error.message,
+        description: error.message || '加载分镜数据时出错',
         variant: 'destructive',
       });
+      // Set empty state on error
+      setShots([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
-  }, [project?.id, isAuthenticated, user?.id, filters, sorting]);
+  }, [project?.id, filterKey, sortingKey]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedShots.length === shots.length) {
@@ -83,39 +98,83 @@ export const useVisualOverview = () => {
 
   const handleDeleteSelected = useCallback(() => {
     // This would trigger the delete confirmation dialog
-    // Implementation depends on the delete functionality requirement
     console.log('Delete selected shots:', selectedShots);
   }, [selectedShots]);
 
   const handleExportPDF = useCallback(() => {
+    if (selectedShots.length === 0) {
+      toast({
+        title: '提示',
+        description: '请先选择要导出的分镜',
+        variant: 'default',
+      });
+      return;
+    }
     exportToPDF(selectedShots, shots);
   }, [selectedShots, shots]);
 
   const handleExportExcel = useCallback(() => {
+    if (selectedShots.length === 0) {
+      toast({
+        title: '提示',
+        description: '请先选择要导出的分镜',
+        variant: 'default',
+      });
+      return;
+    }
     exportToExcel(selectedShots, shots);
   }, [selectedShots, shots]);
 
   const handleBatchArchive = useCallback(async () => {
-    await batchArchiveShots(selectedShots, filters, () => {
-      setSelectedShots([]);
-      loadShotsWithPrompts(currentPage);
-    });
+    if (selectedShots.length === 0) {
+      toast({
+        title: '提示',
+        description: '请先选择要操作的分镜',
+        variant: 'default',
+      });
+      return;
+    }
+    
+    try {
+      await batchArchiveShots(selectedShots, filters, () => {
+        setSelectedShots([]);
+        loadShotsWithPrompts(currentPage);
+      });
+    } catch (error) {
+      console.error('Batch archive error:', error);
+    }
   }, [selectedShots, filters, loadShotsWithPrompts, currentPage]);
 
   const handleBatchSetFinal = useCallback(async () => {
-    await batchSetFinalPrompts(selectedShots, shots, () => {
-      setSelectedShots([]);
-      loadShotsWithPrompts(currentPage);
-    });
+    if (selectedShots.length === 0) {
+      toast({
+        title: '提示',
+        description: '请先选择要操作的分镜',
+        variant: 'default',
+      });
+      return;
+    }
+    
+    try {
+      await batchSetFinalPrompts(selectedShots, shots, () => {
+        setSelectedShots([]);
+        loadShotsWithPrompts(currentPage);
+      });
+    } catch (error) {
+      console.error('Batch set final error:', error);
+    }
   }, [selectedShots, shots, loadShotsWithPrompts, currentPage]);
 
   const handlePageChange = useCallback((page: number) => {
     loadShotsWithPrompts(page);
   }, [loadShotsWithPrompts]);
 
+  // Load data when project changes or filters/sorting change
   useEffect(() => {
-    loadShotsWithPrompts(1);
-  }, [loadShotsWithPrompts]);
+    if (project?.id) {
+      loadShotsWithPrompts(1);
+    }
+  }, [project?.id, filterKey, sortingKey]);
 
   return {
     shots,
