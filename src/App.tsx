@@ -16,6 +16,7 @@ import Footer from "./components/Footer";
 import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from './pages/DashboardPage';
+import FreeCreationPage from './pages/FreeCreationPage';
 import TestAgentsPage from "./pages/agents/TestAgentsPage";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<AppLayout><Index /></AppLayout>} />
+            <Route path="/create" element={<AppLayout><FreeCreationPage /></AppLayout>} />
             <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/screenwriter" element={<ProtectedRoute><AppLayout><ScreenwriterAgentPage /></AppLayout></ProtectedRoute>} />
             <Route path="/agents/director" element={<ProtectedRoute><AppLayout><DirectorAgentPage /></AppLayout></ProtectedRoute>} />

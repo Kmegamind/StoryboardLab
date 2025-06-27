@@ -25,11 +25,11 @@ const Hero = () => {
         </p>
         <div className="flex justify-center items-center">
           <Button size="lg" asChild>
-            <Link to="/dashboard">开始创作</Link>
+            <Link to="/create">开始创作</Link>
           </Button>
         </div>
         <p className="mt-12 text-sm text-muted-foreground">
-          您可以上传一张图片作为背景，让页面更具吸引力。
+          无需登录即可体验AI创作，登录后可保存您的作品
         </p>
       </div>
     </section>
