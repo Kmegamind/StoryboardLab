@@ -201,7 +201,6 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 左侧：分镜详情 */}
           <Card>
             <CardHeader>
               <CardTitle>分镜详情</CardTitle>
@@ -224,7 +223,6 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
             </CardContent>
           </Card>
 
-          {/* 中间：编辑器 */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -253,7 +251,7 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
               <Textarea
                 value={currentPrompt}
                 onChange={(e) => setCurrentPrompt(e.target.value)}
-                placeholder="在这里编辑您的提示词，或点击'生成视觉方案'开始..."
+                placeholder="在这里编辑您的提示词，或点击生成视觉方案开始..."
                 className="min-h-[400px] font-mono text-sm"
               />
             </CardContent>
@@ -261,7 +259,6 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* 版本历史 */}
           <Card>
             <CardHeader>
               <CardTitle>版本历史</CardTitle>
@@ -314,7 +311,6 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
             </CardContent>
           </Card>
 
-          {/* 一致性提示词 */}
           <Card>
             <CardHeader>
               <CardTitle>项目一致性提示词</CardTitle>
