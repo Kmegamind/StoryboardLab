@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User, Wrench } from 'lucide-react';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 
 interface DashboardHeaderProps {
@@ -25,15 +25,23 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) 
           <div className="flex items-center gap-2">
             <Link to="/test-agents">
               <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
+                <Wrench className="h-4 w-4 mr-2" />
                 测试智能体
               </Button>
             </Link>
             {isAuthenticated && (
-              <Button variant="outline" size="sm" onClick={onLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                退出登录
-              </Button>
+              <>
+                <Link to="/settings">
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    设置
+                  </Button>
+                </Link>
+                <Button variant="outline" size="sm" onClick={onLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  退出登录
+                </Button>
+              </>
             )}
           </div>
         </CardTitle>

@@ -2,10 +2,37 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 
+// Function to get user's saved API key from database
+const getUserApiKey = async (provider: string = 'deepseek'): Promise<string | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('user_api_keys')
+      .select('api_key_encrypted')
+      .eq('user_id', user.id)
+      .eq('provider', provider)
+      .single();
+
+    if (error || !data) return null;
+
+    // Simple decryption - in production, use proper decryption
+    return atob(data.api_key_encrypted);
+  } catch (error) {
+    console.error('Error fetching user API key:', error);
+    return null;
+  }
+};
+
 export const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string): Promise<string | null> => {
   try {
-    // 优先使用用户的API密钥
-    const userApiKey = localStorage.getItem('deepseek_api_key');
+    // Priority order: 1. Database saved key, 2. localStorage key, 3. Default service
+    let userApiKey = await getUserApiKey('deepseek');
+    
+    if (!userApiKey) {
+      userApiKey = localStorage.getItem('deepseek_api_key');
+    }
     
     if (userApiKey) {
       // 使用用户的API密钥直接调用DeepSeek API
