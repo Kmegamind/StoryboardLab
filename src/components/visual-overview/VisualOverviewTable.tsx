@@ -1,3 +1,4 @@
+
 import React, { useMemo, useEffect } from 'react';
 import {
   useReactTable,
@@ -232,13 +233,13 @@ const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
           {uniqueShotTypes.length > 0 && (
             <Select
               value={filters.shotType}
-              onValueChange={(value) => onFiltersChange({ ...filters, shotType: value })}
+              onValueChange={(value) => onFiltersChange({ ...filters, shotType: value === 'all-types' ? '' : value })}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="镜头类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">全部类型</SelectItem>
+                <SelectItem value="all-types">全部类型</SelectItem>
                 {uniqueShotTypes.map(type => (
                   <SelectItem key={type} value={type}>{type}</SelectItem>
                 ))}
