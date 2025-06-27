@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
@@ -15,7 +16,6 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
 import Navbar from '@/components/Navbar';
-import { Button } from '@/components/ui/button';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
@@ -168,9 +168,6 @@ const DashboardPage = () => {
         <div className="flex justify-center items-center min-h-screen">
           <div className="text-center">
             <p className="text-lg text-muted-foreground mb-4">请先登录以访问工作台</p>
-            <Button asChild>
-              <Link to="/auth">前往登录</Link>
-            </Button>
           </div>
         </div>
       </div>
