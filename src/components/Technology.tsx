@@ -32,7 +32,7 @@ const Technology = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-primary">技术亮点</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            CinemaAI Studio 由前沿技术驱动，确保高效与创新的完美结合。
+            分镜实验室由前沿技术驱动，确保高效与创新的完美结合。
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-10">

@@ -67,7 +67,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center space-x-2 text-2xl font-bold text-primary hover:text-primary-foreground transition-colors">
             <Film className="h-8 w-8" />
-            <span>CinemaAI Studio</span>
+            <span>分镜实验室</span>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
             {mainNavLinks.length > 0 && mainNavLinks.map((link) => (

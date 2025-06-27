@@ -21,7 +21,7 @@ const getStatusText = (status: string) => {
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) => {
   return (
     <header className="mb-12 text-center">
-      <h1 className="text-5xl font-bold text-primary">AI影视创作工作台</h1>
+      <h1 className="text-5xl font-bold text-primary">分镜实验室 - AI影视创作工作台</h1>
       <p className="text-xl text-muted-foreground mt-2">
         当前项目: <span className="font-semibold">{project.title}</span> (状态: {getStatusText(project.status)})
       </p>

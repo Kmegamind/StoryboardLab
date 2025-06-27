@@ -9,7 +9,7 @@ const Contact = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl font-bold mb-6 text-primary">准备好革新您的影视创作了吗？</h2>
         <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-          访问我们的官方网站获取更多信息，或查阅详细文档深入了解CinemaAI Studio。
+          访问我们的官方网站获取更多信息，或查阅详细文档深入了解分镜实验室。
         </p>
         <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
           <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
