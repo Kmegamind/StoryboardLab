@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ShotWithPrompts, VisualOverviewFilters, VisualOverviewSorting } from '@/types/visualOverview';
 import { ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const columnHelper = createColumnHelper<ShotWithPrompts>();
 
@@ -27,9 +27,13 @@ interface VisualOverviewTableProps {
   filters: VisualOverviewFilters;
   sorting: VisualOverviewSorting;
   selectedShots: string[];
+  uniqueShotTypes: string[];
   onFiltersChange: (filters: VisualOverviewFilters) => void;
   onSortingChange: (sorting: VisualOverviewSorting) => void;
   onSelectedShotsChange: (selectedShots: string[]) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
+  onDeleteSelected: () => void;
 }
 
 const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
@@ -37,11 +41,24 @@ const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
   filters,
   sorting,
   selectedShots,
+  uniqueShotTypes,
   onFiltersChange,
   onSortingChange,
   onSelectedShotsChange,
+  onSelectAll,
+  onClearSelection,
+  onDeleteSelected,
 }) => {
   const navigate = useNavigate();
+
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts({
+    onSelectAll,
+    onClearSelection,
+    onDeleteSelected,
+    hasSelection: selectedShots.length > 0,
+    isEnabled: true,
+  });
 
   const columns = useMemo<ColumnDef<ShotWithPrompts, any>[]>(() => [
     columnHelper.display({
@@ -171,11 +188,6 @@ const VisualOverviewTable: React.FC<VisualOverviewTableProps> = ({
     },
     getRowId: (row) => row.id,
   });
-
-  const uniqueShotTypes = useMemo(() => {
-    const types = new Set(shots.map(shot => shot.shot_type).filter(Boolean));
-    return Array.from(types);
-  }, [shots]);
 
   return (
     <Card>

@@ -13,16 +13,24 @@ const VisualOverviewPage = () => {
     filters,
     sorting,
     selectedShots,
+    uniqueShotTypes,
+    totalCount,
+    currentPage,
+    pageSize,
     setFilters,
     setSorting,
     setSelectedShots,
+    handleSelectAll,
+    handleClearSelection,
+    handleDeleteSelected,
     handleExportPDF,
     handleExportExcel,
     handleBatchArchive,
     handleBatchSetFinal,
+    handlePageChange,
   } = useVisualOverview();
 
-  if (isLoading) {
+  if (isLoading && shots.length === 0) {
     return (
       <VisualOverviewLayout>
         <div className="flex justify-center items-center min-h-96">
@@ -44,6 +52,8 @@ const VisualOverviewPage = () => {
             onExportExcel={handleExportExcel}
             onBatchArchive={handleBatchArchive}
             onBatchSetFinal={handleBatchSetFinal}
+            isArchiveView={filters.status === 'archived'}
+            isLoading={isLoading}
           />
         </div>
 
@@ -52,10 +62,43 @@ const VisualOverviewPage = () => {
           filters={filters}
           sorting={sorting}
           selectedShots={selectedShots}
+          uniqueShotTypes={uniqueShotTypes}
           onFiltersChange={setFilters}
           onSortingChange={setSorting}
           onSelectedShotsChange={setSelectedShots}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onDeleteSelected={handleDeleteSelected}
         />
+
+        {/* 分页信息 */}
+        {totalCount > pageSize && (
+          <div className="flex justify-between items-center text-sm text-muted-foreground">
+            <div>
+              显示 {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)} 
+              条，共 {totalCount} 条记录
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                上一页
+              </button>
+              <span className="px-3 py-1">
+                第 {currentPage} 页，共 {Math.ceil(totalCount / pageSize)} 页
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                下一页
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </VisualOverviewLayout>
   );
