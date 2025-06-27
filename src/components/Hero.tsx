@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
 const Hero = () => {
-  return <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-black">
-      {/* Subtle gradient overlay */}
+  return (
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-black">
       <div className="absolute inset-0 -z-10">
         <div className="relative w-full h-full bg-gradient-to-br from-black via-gray-900 to-black"></div>
       </div>
@@ -14,17 +16,20 @@ const Hero = () => {
             分镜实验室
           </span>
         </h1>
-        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">创新性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。</p>
-        <p className="text-2xl md:text-3xl font-semibold text-primary mb-12">
-          让每个故事都能绽放视觉生命力 ✨
+        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+          将您的故事剧本自动转化为可执行的AI生成指令
+        </p>
+        <p className="text-lg text-gray-400 mb-12 max-w-2xl mx-auto">
+          输入故事情节 → AI智能分析 → 生成专业分镜脚本 → 一键导出视觉指令
         </p>
         <div className="flex justify-center items-center">
           <Button size="lg" asChild>
-            <Link to="/create">开始创作</Link>
+            <Link to="/dashboard">开始创作</Link>
           </Button>
         </div>
-        <p className="mt-12 text-sm text-gray-400">人人都是故事的导演，AI为你实现每一帧灵感</p>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;

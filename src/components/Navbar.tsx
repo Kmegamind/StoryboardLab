@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Film, Menu, X, User, LogOut } from 'lucide-react';
@@ -14,7 +14,6 @@ import {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const location = useLocation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -33,22 +32,6 @@ const Navbar = () => {
     setUser(null);
   };
 
-  const mainNavLinks = [
-    { href: '#features', label: '功能特点' },
-    { href: '#technology', label: '技术亮点' },
-    { href: '#contact', label: '联系我们' },
-  ];
-
-  const scrollToSection = (sectionId: string) => {
-    if (location.pathname === '/') {
-      const element = document.querySelector(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-    setIsMenuOpen(false);
-  };
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,16 +40,8 @@ const Navbar = () => {
             <Film className="h-8 w-8" />
             <span>分镜实验室</span>
           </Link>
-          <div className="hidden md:flex items-center space-x-6">
-            {location.pathname === '/' && mainNavLinks.map((link) => (
-              <button
-                key={link.href}
-                onClick={() => scrollToSection(link.href)}
-                className="text-muted-foreground hover:text-primary transition-colors duration-200 cursor-pointer"
-              >
-                {link.label}
-              </button>
-            ))}
+          
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
                 <Button asChild variant="outline">
@@ -87,16 +62,12 @@ const Navbar = () => {
                 </DropdownMenu>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Button asChild variant="outline">
-                  <Link to="/dashboard">开始创作</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/auth">登录</Link>
-                </Button>
-              </div>
+              <Button asChild>
+                <Link to="/auth">登录</Link>
+              </Button>
             )}
           </div>
+          
           <div className="md:hidden">
             <Button
               variant="ghost"
@@ -107,18 +78,10 @@ const Navbar = () => {
             </Button>
           </div>
         </div>
+        
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col space-y-4">
-              {location.pathname === '/' && mainNavLinks.map((link) => (
-                <button
-                  key={link.href}
-                  onClick={() => scrollToSection(link.href)}
-                  className="text-muted-foreground hover:text-primary transition-colors duration-200 text-left"
-                >
-                  {link.label}
-                </button>
-              ))}
               {user ? (
                 <>
                   <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
@@ -132,14 +95,9 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
-                    开始创作
-                  </Link>
-                  <Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">
-                    登录
-                  </Link>
-                </>
+                <Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">
+                  登录
+                </Link>
               )}
             </div>
           </div>

@@ -15,6 +15,7 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
 import Navbar from '@/components/Navbar';
+import { Button, Link } from '@radix-ui/react';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
@@ -161,14 +162,19 @@ const DashboardPage = () => {
   }
   
   if (!project) {
-      return (
-        <div className="min-h-screen bg-black">
-          <Navbar />
-          <div className="flex justify-center items-center min-h-screen">
-            <p className="text-lg text-destructive">加载项目失败。请检查网络连接并刷新页面。如果您未登录，请先登录。</p>
+    return (
+      <div className="min-h-screen bg-black">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <p className="text-lg text-muted-foreground mb-4">请先登录以访问工作台</p>
+            <Button asChild>
+              <Link to="/auth">前往登录</Link>
+            </Button>
           </div>
         </div>
-      );
+      </div>
+    );
   }
 
   const isProcessing = isLoadingScreenwriter || isLoadingDirector || isSavingShots;
