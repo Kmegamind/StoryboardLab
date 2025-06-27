@@ -27,94 +27,65 @@ const getUserApiKey = async (provider: string = 'deepseek'): Promise<string | nu
 
 export const callDeepSeekAPI = async (systemPrompt: string, userPrompt: string): Promise<string | null> => {
   try {
-    // Priority order: 1. Database saved key, 2. localStorage key, 3. Default service
+    // Priority order: 1. Database saved key, 2. localStorage key
     let userApiKey = await getUserApiKey('deepseek');
     
     if (!userApiKey) {
       userApiKey = localStorage.getItem('deepseek_api_key');
     }
     
-    if (userApiKey) {
-      // 使用用户的API密钥直接调用DeepSeek API
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userApiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          stream: false,
-        }),
+    if (!userApiKey) {
+      // No API key found - show error and guide user to settings
+      toast({
+        title: "需要配置 API 密钥",
+        description: "请先在设置页面配置您的 DeepSeek API 密钥后再使用 AI 功能",
+        variant: "destructive",
       });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('DeepSeek API error:', errorData);
-        toast({
-          title: "API 调用失败",
-          description: `请检查您的API密钥是否正确：${errorData}`,
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      
-      if (!content) {
-        console.error('No content in API response:', data);
-        toast({
-          title: "API 响应异常",
-          description: "未能获取有效回复，请重试",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      return content;
-    } else {
-      // 使用默认的Edge Function
-      console.log("使用默认服务调用 deepseek-proxy function");
-      const { data, error } = await supabase.functions.invoke('deepseek-proxy', {
-        body: { systemPrompt, userPrompt, stream: false },
-      });
-
-      if (error) {
-        console.error('Edge Function Error:', error);
-        toast({
-          title: "服务调用失败",
-          description: `错误: ${error.message}`,
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      console.log("Edge Function response data:", data);
-
-      if (data && data.content) {
-        return data.content;
-      } else if (data && data.error) {
-        console.error('API Error from Edge Function:', data.error);
-        toast({
-          title: "API 请求失败",
-          description: `错误: ${typeof data.error === 'string' ? data.error : data.error.message || '未知错误'}`,
-          variant: "destructive",
-        });
-        return null;
-      } else {
-        toast({
-          title: "服务响应格式错误",
-          description: "未能获取有效回复，请检查网络连接或稍后重试",
-          variant: "destructive",
-        });
-        return null;
-      }
+      return null;
     }
+    
+    // Use user's API key to call DeepSeek API directly
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userApiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('DeepSeek API error:', errorData);
+      toast({
+        title: "API 调用失败",
+        description: `请检查您的API密钥是否正确：${errorData}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error('No content in API response:', data);
+      toast({
+        title: "API 响应异常",
+        description: "未能获取有效回复，请重试",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    return content;
   } catch (error) {
     console.error('Error calling DeepSeek API:', error);
     toast({
