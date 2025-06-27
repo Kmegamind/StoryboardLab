@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Gradient Animation */}
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-black">
+      {/* Subtle gradient overlay */}
       <div className="absolute inset-0 -z-10">
-        <div className="relative w-full h-full bg-gradient-to-br from-brand-purple via-brand-pink to-brand-cyan grainy-noise animate-gradient-xy"></div>
+        <div className="relative w-full h-full bg-gradient-to-br from-black via-gray-900 to-black"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -17,7 +17,7 @@ const Hero = () => {
             分镜实验室
           </span>
         </h1>
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
           革命性的AI影视创作平台，将您的故事剧本自动转化为可执行的AI生成指令。
         </p>
         <p className="text-2xl md:text-3xl font-semibold text-primary mb-12">
@@ -28,7 +28,7 @@ const Hero = () => {
             <Link to="/create">开始创作</Link>
           </Button>
         </div>
-        <p className="mt-12 text-sm text-muted-foreground">
+        <p className="mt-12 text-sm text-gray-400">
           无需登录即可体验AI创作，登录后可保存您的作品
         </p>
       </div>

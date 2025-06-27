@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,34 +7,34 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%; /* Dark background */
+    --background: 0 0% 0%; /* Pure black background */
     --foreground: 210 40% 98%; /* Light foreground */
 
-    --card: 222.2 84% 4.9%;
+    --card: 0 0% 5%; /* Very dark card background */
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 5%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 170 100% 40%; /* New futuristic cyan */
-    --primary-foreground: 222.2 47.4% 11.2%; /* Dark text on primary */
+    --primary-foreground: 0 0% 0%; /* Black text on primary */
     --primary-dark: 170 100% 30%;
     --primary-light: 170 100% 80%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 0 0% 10%; /* Dark secondary */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 0 0% 15%; /* Dark muted */
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 0 0% 15%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 0 0% 20%; /* Dark border */
+    --input: 0 0% 10%; /* Dark input */
     --ring: 170 100% 40%; /* Ring color to match primary */
 
     --radius: 0.5rem;
@@ -43,13 +44,6 @@
     --brand-pink: 330 80% 65%;
     --brand-cyan: 190 80% 55%;
   }
-
-  /*
-  The line below was causing the build error and has been removed.
-  html {
-    @apply dark;
-  }
-  */
 }
 
 @layer base {
@@ -78,7 +72,7 @@
     width: 100%;
     height: 100%;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04; /* Increased from 0.03 */
+    opacity: 0.02; /* Reduced opacity for black background */
     pointer-events: none;
     z-index: 0;
   }
