@@ -1,48 +1,88 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Key, Trash2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, Key, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, TestTube, Shield, Clock, Activity } from 'lucide-react';
 import { useUserApiKeys } from '@/hooks/useUserApiKeys';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import Navbar from '@/components/Navbar';
 import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { formatApiKeyForDisplay } from '@/utils/apiKeyTester';
 
 const UserSettingsPage = () => {
   const { isAuthenticated } = useOptionalAuth();
-  const { apiKeys, isLoading, saveApiKey, deleteApiKey } = useUserApiKeys();
+  const { 
+    apiKeys, 
+    isLoading, 
+    isTesting, 
+    testResult, 
+    saveApiKey, 
+    deleteApiKey, 
+    testApiKey, 
+    testExistingApiKey 
+  } = useUserApiKeys();
+  
   const [newApiKey, setNewApiKey] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [currentTestResult, setCurrentTestResult] = useState<any>(null);
 
   const hasDeepSeekKey = apiKeys.some(key => key.provider === 'deepseek');
+  const deepSeekKey = apiKeys.find(key => key.provider === 'deepseek');
 
-  const handleSaveApiKey = async () => {
+  const handleTestApiKey = async () => {
     if (!newApiKey.trim()) {
       toast({
-        title: 'API Key required',
-        description: 'Please enter a valid API key',
+        title: 'API密钥不能为空',
+        description: '请输入有效的API密钥',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await testApiKey(newApiKey.trim());
+    setCurrentTestResult(result);
+  };
+
+  const handleSaveApiKey = async () => {
+    if (!currentTestResult || !currentTestResult.success) {
+      toast({
+        title: '请先测试API密钥',
+        description: '只有测试成功的API密钥才能保存',
         variant: 'destructive',
       });
       return;
     }
 
     setIsSaving(true);
-    const success = await saveApiKey('deepseek', newApiKey.trim());
+    const success = await saveApiKey('deepseek', newApiKey.trim(), currentTestResult);
     if (success) {
       setNewApiKey('');
+      setCurrentTestResult(null);
     }
     setIsSaving(false);
   };
 
   const handleDeleteApiKey = async (id: string) => {
-    if (confirm('Are you sure you want to delete this API key?')) {
+    if (confirm('确定要删除这个API密钥吗？删除后将无法使用AI功能。')) {
       await deleteApiKey(id);
+      setCurrentTestResult(null);
     }
   };
+
+  const handleTestExistingKey = async () => {
+    await testExistingApiKey('deepseek');
+  };
+
+  // 清理测试结果当输入改变时
+  useEffect(() => {
+    if (currentTestResult && newApiKey !== '') {
+      setCurrentTestResult(null);
+    }
+  }, [newApiKey, currentTestResult]);
 
   if (!isAuthenticated) {
     return (
@@ -85,6 +125,55 @@ const UserSettingsPage = () => {
             </AlertDescription>
           </Alert>
 
+          {/* API Key Binding Status */}
+          {hasDeepSeekKey && deepSeekKey && (
+            <Card className="border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-300">
+                  <Shield className="h-5 w-5" />
+                  账号绑定状态
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                      您的账号已绑定 DeepSeek API
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      密钥: {formatApiKeyForDisplay(deepSeekKey.api_key_encrypted)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTestExistingKey}
+                    disabled={isTesting}
+                    className="text-green-700 border-green-300 hover:bg-green-100 dark:text-green-300 dark:border-green-700 dark:hover:bg-green-800"
+                  >
+                    {isTesting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <TestTube className="h-4 w-4" />
+                    )}
+                    {isTesting ? '测试中...' : '重新测试'}
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3 w-3" />
+                    <span>绑定时间: {new Date(deepSeekKey.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-3 w-3" />
+                    <span>最后更新: {new Date(deepSeekKey.updated_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* API Key Management */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -123,8 +212,20 @@ const UserSettingsPage = () => {
                       </Button>
                     </div>
                     <Button
+                      onClick={handleTestApiKey}
+                      disabled={isTesting || !newApiKey.trim()}
+                      variant="outline"
+                    >
+                      {isTesting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <TestTube className="h-4 w-4" />
+                      )}
+                      {isTesting ? '测试中...' : '测试连接'}
+                    </Button>
+                    <Button
                       onClick={handleSaveApiKey}
-                      disabled={isSaving || !newApiKey.trim()}
+                      disabled={isSaving || !newApiKey.trim() || !currentTestResult?.success}
                     >
                       {isSaving ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -133,6 +234,34 @@ const UserSettingsPage = () => {
                       )}
                     </Button>
                   </div>
+                  
+                  {/* Test Result Display */}
+                  {(currentTestResult || testResult) && (
+                    <div className="mt-3">
+                      <Alert variant={(currentTestResult || testResult)?.success ? "default" : "destructive"}>
+                        {(currentTestResult || testResult)?.success ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4" />
+                        )}
+                        <AlertTitle>
+                          {(currentTestResult || testResult)?.success ? "测试成功" : "测试失败"}
+                        </AlertTitle>
+                        <AlertDescription>
+                          <div className="space-y-1">
+                            <p>{(currentTestResult || testResult)?.message}</p>
+                            {(currentTestResult || testResult)?.details && (
+                              <p className="text-xs opacity-75">{(currentTestResult || testResult)?.details}</p>
+                            )}
+                            <p className="text-xs opacity-50">
+                              测试时间: {(currentTestResult || testResult)?.timestamp?.toLocaleString()}
+                            </p>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
+                  
                   <div className="space-y-2 mt-2">
                     <p className="text-sm text-muted-foreground">
                       Get your API key from{' '}
@@ -151,6 +280,24 @@ const UserSettingsPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Security Information */}
+              <Card className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+                <CardContent className="pt-4">
+                  <div className="flex items-start gap-3">
+                    <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-blue-800 dark:text-blue-300">API密钥安全说明</h4>
+                      <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <p>• 您的API密钥采用加密方式存储，我们无法查看原始密钥</p>
+                        <p>• 密钥仅用于您的AI功能调用，不会被分享给其他用户</p>
+                        <p>• 建议定期检查API密钥的使用情况和安全性</p>
+                        <p>• 如有安全疑虑，请及时在DeepSeek平台重新生成密钥</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {isLoading ? (
                 <div className="flex justify-center py-4">
@@ -176,7 +323,7 @@ const UserSettingsPage = () => {
                           key={key.id}
                           className="flex items-center justify-between p-3 border rounded-lg"
                         >
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium capitalize flex items-center gap-2">
                               {key.provider}
                               {key.provider === 'deepseek' && (
@@ -185,6 +332,9 @@ const UserSettingsPage = () => {
                             </p>
                             <p className="text-sm text-muted-foreground">
                               Added {new Date(key.created_at).toLocaleDateString()}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Key: {formatApiKeyForDisplay(atob(key.api_key_encrypted))}
                             </p>
                           </div>
                           <Button
