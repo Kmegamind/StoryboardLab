@@ -1,13 +1,13 @@
 
-# CinemaAI Studio - AI影视前期制作工具
+# 分镜实验室 - AI影视前期制作工具
 
-![CinemaAI Studio](https://img.shields.io/badge/CinemaAI-Studio-00A67E?style=for-the-badge&logo=react)
+![分镜实验室](https://img.shields.io/badge/CinemaAI-Studio-00A67E?style=for-the-badge&logo=react)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 ## 🎬 项目简介
 
-CinemaAI Studio 是一个创新的AI影视前期制作平台，专为电影制作人、编剧、导演和创意工作者设计。通过先进的大型语言模型（LLM）技术，将简单的故事灵感自动转化为专业、可执行的视觉生产方案。
+分镜实验室 是一个创新的AI影视前期制作平台，专为电影制作人、编剧、导演和创意工作者设计。通过先进的大型语言模型（LLM）技术，将简单的故事灵感自动转化为专业、可执行的视觉生产方案。
 
 ### 核心优势
 - **🤖 AI智能化创作**: 多Agent协作架构，实现从剧本到分镜的全流程自动化
@@ -38,7 +38,7 @@ CinemaAI Studio 是一个创新的AI影视前期制作平台，专为电影制�
 ## 🛠️ 技术架构
 
 ```
-React 18.3.1          - 现代化UI框架
+React 18.3.1          - UI框架
 TypeScript            - 类型安全的JavaScript
 Vite                  - 高性能构建工具
 Tailwind CSS          - 实用优先的CSS框架
@@ -145,7 +145,7 @@ cinemaai-studio/
 A: 访问DeepSeek官网注册账户并获取API密钥。
 
 **Q: 为什么需要配置自己的API密钥？**
-A: 为了保证服务稳定性和用户数据安全，我们要求用户使用自己的API密钥。
+A: 本项目为开源项目，同时为了保证服务稳定性和用户数据安全，我们要求用户使用自己的API密钥。
 
 **Q: 支持哪些AI模型？**
 A: 目前主要支持DeepSeek系列模型，未来将支持更多模型。
@@ -166,14 +166,13 @@ A: 目前主要支持DeepSeek系列模型，未来将支持更多模型。
 
 ### 计划中 📋
 - [ ] 视频生成集成
-- [ ] 3D场景预览
+- [ ] 场景预览
 - [ ] 插件系统
-- [ ] 企业级功能
 
 ---
 
 **CinemaAI Studio** - 让每个故事都能绽放视觉生命力 ✨
 
-*Built with ❤️ by CinemaAI Team*
+*Built with ❤️ by 猪猪乾坤屁💨（小红书：357374401）*
 
 *This project was created with [Lovable](https://lovable.dev)*
