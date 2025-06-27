@@ -3,40 +3,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Camera, Palette, Beaker } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { Beaker } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 
 type Shot = Tables<'structured_shots'>;
 
 interface SelectedShotActionsCardProps {
   selectedShot: Shot | null;
-  onGeneratePrompts: () => void;
-  isLoadingPrompts: boolean;
-  generatedPrompts: string | null;
-  onGenerateCinematographerPlan: () => void;
-  isLoadingCinematographer: boolean;
-  onGenerateArtDirectorPlan: () => void;
-  isLoadingArtDirector: boolean;
 }
 
 const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
   selectedShot,
-  onGeneratePrompts,
-  isLoadingPrompts,
-  generatedPrompts,
-  onGenerateCinematographerPlan,
-  isLoadingCinematographer,
-  onGenerateArtDirectorPlan,
-  isLoadingArtDirector,
 }) => {
   const navigate = useNavigate();
 
   if (!selectedShot) {
-    return null; // Don't render anything if no shot is selected
+    return null;
   }
-
-  const isAnyLoading = isLoadingPrompts || isLoadingCinematographer || isLoadingArtDirector;
 
   const handleEnterPromptLab = () => {
     navigate(`/shot-lab/${selectedShot.id}`);
@@ -45,76 +28,52 @@ const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
   return (
     <Card className="mt-8">
       <CardHeader>
-        <CardTitle className="text-2xl">为选中分镜生成 AI 方案</CardTitle>
+        <CardTitle className="text-2xl">分镜详情</CardTitle>
         <CardDescription>
           已选择分镜号: <span className="font-semibold text-primary">{selectedShot.shot_number || 'N/A'}</span>. 
-          点击下方按钮，让不同的 AI Agent 为此分镜生成专业方案。
+          进入 Prompt Lab 来生成和编辑这个分镜的视觉方案。
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-1">分镜详情:</h4>
-            <p className="text-sm text-muted-foreground"><strong>景别:</strong> {selectedShot.shot_type || 'N/A'}</p>
-            <p className="text-sm text-muted-foreground"><strong>画面内容:</strong> {selectedShot.scene_content || 'N/A'}</p>
-            {selectedShot.visual_style && <p className="text-sm text-muted-foreground"><strong>画面风格参考:</strong> {selectedShot.visual_style}</p>}
-            {selectedShot.director_notes && <p className="text-sm text-muted-foreground"><strong>导演注释:</strong> {selectedShot.director_notes}</p>}
+            <h4 className="font-semibold mb-2">分镜详情:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <p className="text-muted-foreground"><strong>景别:</strong> {selectedShot.shot_type || 'N/A'}</p>
+              <p className="text-muted-foreground"><strong>预估时长:</strong> {selectedShot.estimated_duration || 'N/A'}</p>
+              <p className="text-muted-foreground col-span-full"><strong>画面内容:</strong> {selectedShot.scene_content || 'N/A'}</p>
+              {selectedShot.dialogue && selectedShot.dialogue !== "无" && (
+                <p className="text-muted-foreground col-span-full"><strong>对白:</strong> {selectedShot.dialogue}</p>
+              )}
+              {selectedShot.camera_movement && (
+                <p className="text-muted-foreground"><strong>运镜:</strong> {selectedShot.camera_movement}</p>
+              )}
+              {selectedShot.sound_music && (
+                <p className="text-muted-foreground"><strong>音效:</strong> {selectedShot.sound_music}</p>
+              )}
+              {selectedShot.visual_style && (
+                <p className="text-muted-foreground col-span-full"><strong>视觉风格:</strong> {selectedShot.visual_style}</p>
+              )}
+              {selectedShot.key_props && (
+                <p className="text-muted-foreground col-span-full"><strong>关键道具:</strong> {selectedShot.key_props}</p>
+              )}
+              {selectedShot.director_notes && (
+                <p className="text-muted-foreground col-span-full"><strong>导演注释:</strong> {selectedShot.director_notes}</p>
+              )}
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="pt-4">
             <Button
               onClick={handleEnterPromptLab}
               variant="default"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              size="lg"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
-              <Beaker className="h-4 w-4 mr-2" />
+              <Beaker className="h-5 w-5 mr-2" />
               进入 Prompt Lab
             </Button>
-            <Button
-              onClick={onGeneratePrompts}
-              disabled={isAnyLoading}
-            >
-              {isLoadingPrompts ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Sparkles />
-              )}
-              生成视觉方案
-            </Button>
-            <Button
-              onClick={onGenerateCinematographerPlan}
-              disabled={isAnyLoading}
-              variant="secondary"
-            >
-              {isLoadingCinematographer ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Camera />
-              )}
-              移交摄像 Agent
-            </Button>
-            <Button
-              onClick={onGenerateArtDirectorPlan}
-              disabled={isAnyLoading}
-              variant="secondary"
-            >
-              {isLoadingArtDirector ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Palette />
-              )}
-              移交美术 Agent
-            </Button>
           </div>
-
-          {generatedPrompts && (
-            <div>
-              <h4 className="font-semibold mt-6 mb-2">生成的视觉方案:</h4>
-              <div className="p-4 bg-muted/20 border border-primary/50 rounded-md min-h-[150px] max-h-[600px] overflow-y-auto text-sm">
-                <pre className="whitespace-pre-wrap font-sans">{generatedPrompts}</pre>
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

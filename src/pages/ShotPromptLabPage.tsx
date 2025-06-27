@@ -1,63 +1,57 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Star, Trash2, History, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { toast } from '@/hooks/use-toast';
+import { ArrowLeft, Save, Plus, Trash2, Star, Loader2, Sparkles } from 'lucide-react';
 import { useShotPromptLab } from '@/hooks/useShotPromptLab';
-import { useProject } from '@/hooks/useProject';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { callDeepSeekAPI } from '@/utils/apiUtils';
+import Navbar from '@/components/Navbar';
 
 type Shot = Tables<'structured_shots'>;
 
-const ShotPromptLabPage: React.FC = () => {
+const ShotPromptLabPage = () => {
   const { shotId } = useParams<{ shotId: string }>();
   const navigate = useNavigate();
-  const { project } = useProject();
+  const { user } = useAuth();
   const [shot, setShot] = useState<Shot | null>(null);
-  const [currentPromptText, setCurrentPromptText] = useState('');
-  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [isLoadingShot, setIsLoadingShot] = useState(true);
+  const [currentPrompt, setCurrentPrompt] = useState('');
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
   const {
-    prompts,
+    promptVersions,
     consistencyPrompts,
-    selectedPrompt,
-    isLoading,
-    isSaving,
-    setSelectedPrompt,
+    isLoadingVersions,
+    isLoadingConsistency,
+    fetchPromptVersions,
     fetchConsistencyPrompts,
-    createPromptVersion,
-    updatePrompt,
+    savePromptVersion,
+    deletePromptVersion,
     setFinalVersion,
-    deletePrompt,
-  } = useShotPromptLab(shotId || '');
+    saveConsistencyPrompt,
+    deleteConsistencyPrompt,
+  } = useShotPromptLab();
 
   useEffect(() => {
-    if (shotId) {
-      fetchShot();
+    if (shotId && user) {
+      fetchShotDetails();
+      fetchPromptVersions(shotId);
+      fetchConsistencyPrompts(user.id);
     }
-  }, [shotId]);
+  }, [shotId, user]);
 
-  useEffect(() => {
-    if (project?.id) {
-      fetchConsistencyPrompts(project.id);
-    }
-  }, [project?.id, fetchConsistencyPrompts]);
-
-  useEffect(() => {
-    if (selectedPrompt) {
-      setCurrentPromptText(selectedPrompt.prompt_text);
-      setIsEditingPrompt(false);
-    }
-  }, [selectedPrompt]);
-
-  const fetchShot = async () => {
+  const fetchShotDetails = async () => {
     if (!shotId) return;
+    
+    setIsLoadingShot(true);
     try {
       const { data, error } = await supabase
         .from('structured_shots')
@@ -65,257 +59,302 @@ const ShotPromptLabPage: React.FC = () => {
         .eq('id', shotId)
         .single();
 
-      if (error) throw error;
-      setShot(data);
-    } catch (error: any) {
-      toast({
-        title: '获取分镜信息失败',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error) {
+        toast({ title: "加载分镜失败", description: error.message, variant: "destructive" });
+        navigate('/dashboard');
+      } else {
+        setShot(data);
+      }
+    } catch (error) {
+      toast({ title: "加载分镜出错", description: "请重试", variant: "destructive" });
+      navigate('/dashboard');
+    } finally {
+      setIsLoadingShot(false);
     }
+  };
+
+  const generateVisualPrompt = async () => {
+    if (!shot) return;
+    
+    setIsGeneratingPrompt(true);
+    setCurrentPrompt('');
+
+    const systemPromptImagePrompts = `You are a world-class AI visual production team, consisting of a meticulous Image Analyst and a creative AI Prompt Engineer. Your goal is to transform a simple shot description into a comprehensive, professional-grade visual production plan and a set of ready-to-use, bilingual (English and Chinese) prompts for generative AI models like Midjourney, DALL-E 3, or Sora.
+
+Based on the user's provided shot details, follow this exact structure for your output:
+
+---
+
+### 1. 图像分析 (Image Analysis)
+(Provide a detailed analysis of the visual elements described in the shot. Describe the architecture, atmosphere, characters, lighting, and key objects in English. This section is for deep understanding.)
+
+### 2. 知识库 / 执行方案 (Knowledge Base / Execution Plan)
+(This is the core creative and technical plan. Be specific and detailed.)
+
+**- 整体概念 (Overall Concept):**
+  (Break down the single shot into 2-3 distinct, cinematic camera angles or moments. e.g., an establishing shot, a medium shot, a close-up.)
+
+**- 风格与情绪 (Style & Mood):**
+  (Define the art style, e.g., "High-end 2.5-D animated concept-art look", "Photorealistic, gritty noir". Define the mood, e.g., "Dream-like, serene, mysterious".)
+
+**- 保持一致性的关键元素 (Key Elements for Consistency):**
+  (List specific visual details that MUST remain consistent across all generated images for this shot, e.g., character's clothing, architectural motifs, specific props.)
+
+**- 构图与布局 (Layout & Composition):**
+  (For each camera angle defined in the 'Overall Concept', describe the composition rules, e.g., "Rule-of-thirds", "Leading lines", "Shallow DOF".)
+
+**- 调色板 (Color Palette):**
+  (Suggest a specific color palette. You can use descriptive names or even HEX codes, e.g., "Jade-Teal (#2f7e7c), Dusky Sapphire (#122f57), Lantern Ember (#ff5c37)")
+
+### 3. 图像生成提示词 (Image Generation Prompts)
+(For each camera angle/moment from the 'Overall Concept', provide one final, detailed prompt. Each prompt MUST be bilingual.)
+
+**- 镜头 1: [Angle Name]**
+  **English:** [Detailed prompt in English. Start with resolution/aspect ratio, e.g., "16:9 cinematic". Include all elements from the knowledge base: subject, action, style, composition, lighting, color. Be extremely descriptive.]
+  **中文:** [The exact same detailed prompt, translated into Chinese.]
+
+**- 镜头 2: [Angle Name]**
+  **English:** [Detailed prompt in English.]
+  **中文:** [The exact same detailed prompt, translated into Chinese.]
+
+---
+
+Your output must be clear, well-structured, and ready for a professional production pipeline.`;
+
+    const userPromptContent = `
+请为以下分镜细节生成一份专业的视觉执行方案和对应的图像/视频提示词:
+- 镜号: ${shot.shot_number || 'N/A'}
+- 景别: ${shot.shot_type || 'N/A'}
+- 画面内容: ${shot.scene_content}
+${shot.dialogue && shot.dialogue !== "无" ? `- 对白/潜台词: ${shot.dialogue}` : ''}
+${shot.camera_movement ? `- 运镜方式: ${shot.camera_movement}` : ''}
+${shot.sound_music ? `- 音效/音乐参考: ${shot.sound_music}` : ''}
+${shot.visual_style ? `- 画面风格参考: ${shot.visual_style}` : ''}
+${shot.key_props ? `- 关键道具: ${shot.key_props}` : ''}
+${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
+
+请严格按照系统指令的结构进行输出。`;
+
+    const result = await callDeepSeekAPI(systemPromptImagePrompts, userPromptContent);
+    if (result) {
+      setCurrentPrompt(result);
+      toast({ title: "视觉方案生成成功", description: "已生成详细视觉方案，您可以进一步编辑。" });
+    } else {
+      toast({ title: "视觉方案生成失败", description: "未能从AI获取方案。", variant: "destructive" });
+    }
+    setIsGeneratingPrompt(false);
   };
 
   const handleSavePrompt = async () => {
-    if (!currentPromptText.trim()) {
-      toast({ title: '请输入提示词内容', variant: 'destructive' });
-      return;
+    if (!currentPrompt.trim() || !shotId || !user) return;
+    
+    const success = await savePromptVersion(shotId, user.id, currentPrompt);
+    if (success) {
+      toast({ title: "提示词已保存", description: "已保存为新版本" });
+      fetchPromptVersions(shotId);
     }
-
-    if (isEditingPrompt && selectedPrompt) {
-      await updatePrompt(selectedPrompt.id, { prompt_text: currentPromptText });
-    } else {
-      await createPromptVersion(currentPromptText);
-    }
-    setIsEditingPrompt(false);
   };
 
-  const handleCreateNewVersion = async () => {
-    if (!currentPromptText.trim()) {
-      toast({ title: '请输入提示词内容', variant: 'destructive' });
-      return;
-    }
-    await createPromptVersion(currentPromptText);
+  const handleLoadVersion = (promptText: string) => {
+    setCurrentPrompt(promptText);
+    toast({ title: "版本已加载", description: "提示词已加载到编辑器" });
   };
 
-  const handleCopyPrompt = (promptText: string) => {
-    navigator.clipboard.writeText(promptText);
-    toast({ title: '提示词已复制到剪贴板' });
+  const insertConsistencyPrompt = (promptText: string) => {
+    setCurrentPrompt(prev => prev + '\n\n' + promptText);
+    toast({ title: "一致性提示词已插入" });
   };
 
-  const insertConsistencyPrompt = (consistencyPrompt: string) => {
-    const newText = currentPromptText + (currentPromptText ? '\n\n' : '') + consistencyPrompt;
-    setCurrentPromptText(newText);
-  };
+  if (isLoadingShot) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4">正在加载分镜详情...</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (!shotId) {
-    return <div>无效的分镜ID</div>;
+  if (!shot) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-lg text-muted-foreground">分镜不存在</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              返回控制台
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">分镜 Prompt Lab</h1>
-              {shot && (
-                <p className="text-muted-foreground">
-                  镜号: {shot.shot_number || 'N/A'} | {shot.shot_type || 'N/A'}
-                </p>
-              )}
-            </div>
-          </div>
+    <div className="min-h-screen bg-black">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={() => navigate('/dashboard')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回仪表板
+          </Button>
+          <h1 className="text-3xl font-bold">Prompt Lab - 分镜 {shot.shot_number}</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* 左侧：版本历史 */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  版本历史
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <p className="text-sm text-muted-foreground">加载中...</p>
-                ) : prompts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">暂无版本</p>
-                ) : (
-                  <div className="space-y-2">
-                    {prompts.map((prompt) => (
-                      <div
-                        key={prompt.id}
-                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedPrompt?.id === prompt.id
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:bg-muted/50'
-                        }`}
-                        onClick={() => setSelectedPrompt(prompt)}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium">v{prompt.version_number}</span>
-                          <div className="flex items-center gap-1">
-                            {prompt.is_final && (
-                              <Badge variant="secondary" className="text-xs">
-                                <Star className="h-3 w-3 mr-1" />
-                                最终
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {prompt.prompt_text.substring(0, 60)}...
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(prompt.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 左侧：分镜详情 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>分镜详情</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div><strong>景别:</strong> {shot.shot_type || 'N/A'}</div>
+              <div><strong>画面内容:</strong> {shot.scene_content}</div>
+              {shot.dialogue && shot.dialogue !== "无" && (
+                <div><strong>对白:</strong> {shot.dialogue}</div>
+              )}
+              {shot.camera_movement && (
+                <div><strong>运镜:</strong> {shot.camera_movement}</div>
+              )}
+              {shot.visual_style && (
+                <div><strong>视觉风格:</strong> {shot.visual_style}</div>
+              )}
+              {shot.director_notes && (
+                <div><strong>导演注释:</strong> {shot.director_notes}</div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* 中间：提示词编辑区 */}
-          <div className="lg:col-span-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>
-                    {selectedPrompt 
-                      ? `提示词 v${selectedPrompt.version_number}${selectedPrompt.is_final ? ' (最终版)' : ''}`
-                      : '新建提示词'
-                    }
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {selectedPrompt && (
-                      <>
+          {/* 中间：编辑器 */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>提示词编辑器</CardTitle>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={generateVisualPrompt}
+                    disabled={isGeneratingPrompt}
+                    variant="outline"
+                  >
+                    {isGeneratingPrompt ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    生成视觉方案
+                  </Button>
+                  <Button onClick={handleSavePrompt} disabled={!currentPrompt.trim()}>
+                    <Save className="h-4 w-4 mr-2" />
+                    保存版本
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={currentPrompt}
+                onChange={(e) => setCurrentPrompt(e.target.value)}
+                placeholder="在这里编辑您的提示词，或点击"生成视觉方案"开始..."
+                className="min-h-[400px] font-mono text-sm"
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* 版本历史 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>版本历史</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingVersions ? (
+                <div className="flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : promptVersions.length === 0 ? (
+                <p className="text-muted-foreground">暂无版本历史</p>
+              ) : (
+                <div className="space-y-3">
+                  {promptVersions.map((version) => (
+                    <div key={version.id} className="flex items-center justify-between p-3 border rounded">
+                      <div className="flex items-center gap-2">
+                        <span>版本 {version.version_number}</span>
+                        {version.is_final && <Badge variant="secondary"><Star className="h-3 w-3" /></Badge>}
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(version.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
                         <Button
-                          variant="outline"
                           size="sm"
-                          onClick={() => handleCopyPrompt(currentPromptText)}
+                          variant="outline"
+                          onClick={() => handleLoadVersion(version.prompt_text)}
                         >
-                          <Copy className="h-4 w-4 mr-1" />
-                          复制
+                          加载
                         </Button>
                         <Button
-                          variant="outline"
                           size="sm"
-                          onClick={() => setFinalVersion(selectedPrompt.id)}
-                          disabled={selectedPrompt.is_final || isSaving}
+                          variant="outline"
+                          onClick={() => setFinalVersion(version.id)}
                         >
-                          <Star className="h-4 w-4 mr-1" />
                           设为最终版
                         </Button>
                         <Button
-                          variant="outline"
                           size="sm"
-                          onClick={() => deletePrompt(selectedPrompt.id)}
-                          disabled={isSaving}
+                          variant="destructive"
+                          onClick={() => deletePromptVersion(version.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Textarea
-                    value={currentPromptText}
-                    onChange={(e) => {
-                      setCurrentPromptText(e.target.value);
-                      if (selectedPrompt && !isEditingPrompt) {
-                        setIsEditingPrompt(true);
-                      }
-                    }}
-                    placeholder="输入或编辑提示词内容..."
-                    className="min-h-[300px] resize-none"
-                  />
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={handleSavePrompt}
-                      disabled={!currentPromptText.trim() || isSaving}
-                    >
-                      {isSaving ? '保存中...' : isEditingPrompt ? '更新当前版本' : '保存为新版本'}
-                    </Button>
-                    
-                    {selectedPrompt && isEditingPrompt && (
-                      <Button
-                        variant="outline"
-                        onClick={handleCreateNewVersion}
-                        disabled={!currentPromptText.trim() || isSaving}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        另存为新版本
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* 右侧：项目资产快速插入 */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>项目资产</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {consistencyPrompts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">暂无一致性提示词</p>
-                ) : (
-                  <div className="space-y-4">
-                    {['character', 'location', 'style', 'props'].map((assetType) => {
-                      const typePrompts = consistencyPrompts.filter(p => p.asset_type === assetType);
-                      if (typePrompts.length === 0) return null;
-                      
-                      return (
-                        <div key={assetType}>
-                          <h4 className="text-sm font-medium mb-2 capitalize">
-                            {assetType === 'character' ? '角色' : 
-                             assetType === 'location' ? '场景' :
-                             assetType === 'style' ? '风格' : '道具'}
-                          </h4>
-                          <div className="space-y-1">
-                            {typePrompts.map((prompt) => (
-                              <Button
-                                key={prompt.id}
-                                variant="outline"
-                                size="sm"
-                                className="w-full justify-start text-left h-auto p-2"
-                                onClick={() => insertConsistencyPrompt(prompt.consistency_prompt)}
-                              >
-                                <div>
-                                  <div className="font-medium text-xs">{prompt.asset_name}</div>
-                                  <div className="text-xs text-muted-foreground line-clamp-2">
-                                    {prompt.consistency_prompt.substring(0, 40)}...
-                                  </div>
-                                </div>
-                              </Button>
-                            ))}
-                          </div>
-                          <Separator className="mt-2" />
+          {/* 一致性提示词 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>项目一致性提示词</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingConsistency ? (
+                <div className="flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : consistencyPrompts.length === 0 ? (
+                <p className="text-muted-foreground">暂无一致性提示词</p>
+              ) : (
+                <div className="space-y-3">
+                  {consistencyPrompts.map((prompt) => (
+                    <div key={prompt.id} className="p-3 border rounded">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Badge>{prompt.asset_type}</Badge>
+                          <span className="font-medium">{prompt.asset_name}</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => insertConsistencyPrompt(prompt.consistency_prompt)}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            插入
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {prompt.consistency_prompt}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

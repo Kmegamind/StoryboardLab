@@ -34,18 +34,9 @@ const DashboardPage = () => {
     archivedShots,
     isLoadingSavedShots,
     selectedShot,
-    generatedImagePrompts,
-    isLoadingImagePrompts,
-    cinematographerPlan,
-    isLoadingCinematographer,
-    artDirectorPlan,
-    isLoadingArtDirector,
     fetchSavedShots,
     selectShot,
     toggleShotArchiveStatus,
-    generatePromptsForSelectedShot,
-    generateCinematographerPlan,
-    generateArtDirectorPlan,
     clearSelectedShotAndPrompts,
   } = useShotManagement();
 
@@ -247,18 +238,7 @@ const DashboardPage = () => {
         />
 
         {selectedShot && (
-          <SelectedShotDetails
-            selectedShot={selectedShot}
-            onGeneratePrompts={generatePromptsForSelectedShot}
-            isLoadingPrompts={isLoadingImagePrompts}
-            generatedPrompts={generatedImagePrompts}
-            onGenerateCinematographerPlan={generateCinematographerPlan}
-            isLoadingCinematographer={isLoadingCinematographer}
-            cinematographerPlan={cinematographerPlan}
-            onGenerateArtDirectorPlan={generateArtDirectorPlan}
-            isLoadingArtDirector={isLoadingArtDirector}
-            artDirectorPlan={artDirectorPlan}
-          />
+          <SelectedShotDetails selectedShot={selectedShot} />
         )}
 
         <LoginPromptDialog
