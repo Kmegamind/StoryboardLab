@@ -1,32 +1,64 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Project } from '@/hooks/useProject';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LogOut, Settings, User } from 'lucide-react';
+import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 
 interface DashboardHeaderProps {
-  project: Project;
+  project: any;
   onLogout: () => void;
 }
 
-const getStatusText = (status: string) => {
-  switch (status) {
-    case 'new': return '新建';
-    case 'writing': return '编剧中';
-    case 'directing': return '导演中';
-    case 'completed': return '已完成';
-    default: return status;
-  }
-};
-
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ project, onLogout }) => {
+  const { user, isAuthenticated } = useOptionalAuth();
+
   return (
-    <header className="mb-12 text-center">
-      <h1 className="text-5xl font-bold text-primary">分镜实验室 - AI影视创作工作台</h1>
-      <p className="text-xl text-muted-foreground mt-2">
-        当前项目: <span className="font-semibold">{project.title}</span> (状态: {getStatusText(project.status)})
-      </p>
-      <Button onClick={onLogout} variant="outline" className="mt-4">退出登录</Button>
-    </header>
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-3xl font-bold text-primary">AI 电影制作工作台</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link to="/test-agents">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                测试智能体
+              </Button>
+            </Link>
+            {isAuthenticated && (
+              <Button variant="outline" size="sm" onClick={onLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                退出登录
+              </Button>
+            )}
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-lg font-semibold">项目: {project?.name || '未命名项目'}</p>
+            <p className="text-sm text-muted-foreground">
+              状态: <span className="capitalize">{project?.status || '新建'}</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {isAuthenticated ? (
+              <>
+                <User className="h-4 w-4" />
+                <span>{user?.email}</span>
+              </>
+            ) : (
+              <span>访客模式 - 需要登录才能保存数据</span>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

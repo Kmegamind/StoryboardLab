@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { Save, RotateCcw, Settings } from 'lucide-react';
+import { Save, RotateCcw, Settings, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import Navbar from '@/components/Navbar';
 
 interface AgentConfig {
   name: string;
@@ -54,6 +56,27 @@ const TestAgentsPage = () => {
 
   const [activeAgent, setActiveAgent] = useState('screenwriter');
 
+  // 加载保存的配置
+  useEffect(() => {
+    const loadConfigs = () => {
+      Object.keys(agentConfigs).forEach(agentKey => {
+        const savedConfig = localStorage.getItem(`agent_config_${agentKey}`);
+        if (savedConfig) {
+          try {
+            const parsedConfig = JSON.parse(savedConfig);
+            setAgentConfigs(prev => ({
+              ...prev,
+              [agentKey]: parsedConfig
+            }));
+          } catch (error) {
+            console.error(`Error loading config for ${agentKey}:`, error);
+          }
+        }
+      });
+    };
+    loadConfigs();
+  }, []);
+
   const handleConfigChange = (agentKey: string, field: keyof AgentConfig, value: string | number) => {
     setAgentConfigs(prev => ({
       ...prev,
@@ -65,7 +88,6 @@ const TestAgentsPage = () => {
   };
 
   const handleSave = (agentKey: string) => {
-    // 这里可以添加保存到数据库的逻辑
     localStorage.setItem(`agent_config_${agentKey}`, JSON.stringify(agentConfigs[agentKey]));
     toast({
       title: "配置已保存",
@@ -74,7 +96,6 @@ const TestAgentsPage = () => {
   };
 
   const handleReset = (agentKey: string) => {
-    // 重置为默认配置
     const defaultConfigs = {
       screenwriter: {
         name: '编剧 Agent',
@@ -83,7 +104,27 @@ const TestAgentsPage = () => {
         maxTokens: 2000,
         description: '负责将故事梗概转化为初步剧本'
       },
-      // ... 其他默认配置
+      director: {
+        name: '导演 Agent',
+        systemPrompt: `你是一位经验丰富的电影导演，擅长将剧本分解为具体的拍摄指令。请将用户提供的剧本内容转化为结构化的分镜列表，以JSON格式输出。每个分镜应包含：shot_number（镜头编号）、scene_description（场景描述）、camera_angle（机位角度）、character_actions（角色动作）、dialogue（对话）等字段。确保输出格式严格遵循JSON标准。`,
+        temperature: 0.7,
+        maxTokens: 3000,
+        description: '将剧本转化为结构化分镜列表'
+      },
+      cinematographer: {
+        name: '摄像 Agent',
+        systemPrompt: `你是一位专业的电影摄影师，负责为每个分镜提供详细的拍摄方案。包括镜头类型、运动方式、光线设置、色彩基调等技术细节。请为每个镜头提供具体可执行的摄影指导。`,
+        temperature: 0.6,
+        maxTokens: 1500,
+        description: '为分镜提供专业摄影指导'
+      },
+      artDirector: {
+        name: '美术指导 Agent',
+        systemPrompt: `你是一位资深的电影美术指导，负责为每个场景设计视觉风格。包括场景布置、服装设计、道具选择、色彩搭配等美术细节。请提供详细的美术设计方案。`,
+        temperature: 0.7,
+        maxTokens: 1500,
+        description: '为场景提供美术设计方案'
+      }
     };
     
     if (defaultConfigs[agentKey as keyof typeof defaultConfigs]) {
@@ -183,50 +224,61 @@ const TestAgentsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-28 min-h-screen">
-      <header className="mb-8">
-        <div className="flex items-center gap-3">
-          <Settings className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-4xl font-bold text-primary">Agent 配置管理</h1>
-            <p className="text-lg text-muted-foreground mt-2">
-              调整各个AI Agent的提示词和参数，优化创作效果
-            </p>
+    <div className="min-h-screen bg-black">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 pt-28">
+        <header className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                返回工作台
+              </Button>
+            </Link>
           </div>
-        </div>
-      </header>
+          <div className="flex items-center gap-3">
+            <Settings className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-4xl font-bold text-primary">Agent 配置管理</h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                调整各个AI Agent的提示词和参数，优化创作效果
+              </p>
+            </div>
+          </div>
+        </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Agent 配置面板</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeAgent} onValueChange={setActiveAgent}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="screenwriter">编剧 Agent</TabsTrigger>
-              <TabsTrigger value="director">导演 Agent</TabsTrigger>
-              <TabsTrigger value="cinematographer">摄像 Agent</TabsTrigger>
-              <TabsTrigger value="artDirector">美术指导 Agent</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="screenwriter" className="mt-6">
-              <AgentConfigPanel agentKey="screenwriter" />
-            </TabsContent>
-            
-            <TabsContent value="director" className="mt-6">
-              <AgentConfigPanel agentKey="director" />
-            </TabsContent>
-            
-            <TabsContent value="cinematographer" className="mt-6">
-              <AgentConfigPanel agentKey="cinematographer" />
-            </TabsContent>
-            
-            <TabsContent value="artDirector" className="mt-6">
-              <AgentConfigPanel agentKey="artDirector" />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Agent 配置面板</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeAgent} onValueChange={setActiveAgent}>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="screenwriter">编剧 Agent</TabsTrigger>
+                <TabsTrigger value="director">导演 Agent</TabsTrigger>
+                <TabsTrigger value="cinematographer">摄像 Agent</TabsTrigger>
+                <TabsTrigger value="artDirector">美术指导 Agent</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="screenwriter" className="mt-6">
+                <AgentConfigPanel agentKey="screenwriter" />
+              </TabsContent>
+              
+              <TabsContent value="director" className="mt-6">
+                <AgentConfigPanel agentKey="director" />
+              </TabsContent>
+              
+              <TabsContent value="cinematographer" className="mt-6">
+                <AgentConfigPanel agentKey="cinematographer" />
+              </TabsContent>
+              
+              <TabsContent value="artDirector" className="mt-6">
+                <AgentConfigPanel agentKey="artDirector" />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

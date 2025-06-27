@@ -13,8 +13,20 @@ export const usePlotProcessing = () => {
     }
     setIsLoadingScreenwriter(true);
     try {
-      const systemPromptScreenwriter = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
-      const result = await callDeepSeekAPI(systemPromptScreenwriter, currentPlot);
+      // 尝试从localStorage加载保存的配置
+      const savedConfig = localStorage.getItem('agent_config_screenwriter');
+      let systemPrompt = "你是一位才华横溢的电影编剧。请根据用户提供的故事梗概或情节，创作一段富有叙事性、包含场景描述、角色行为和对话的初步剧本。请注重故事的流畅性和画面的想象力，暂时不需要严格按照镜头号或非常结构化的格式输出。你的输出将交给导演进行进一步的专业处理和分镜设计。";
+      
+      if (savedConfig) {
+        try {
+          const config = JSON.parse(savedConfig);
+          systemPrompt = config.systemPrompt || systemPrompt;
+        } catch (error) {
+          console.error('Error parsing saved screenwriter config:', error);
+        }
+      }
+
+      const result = await callDeepSeekAPI(systemPrompt, currentPlot);
 
       if (result) {
         toast({
