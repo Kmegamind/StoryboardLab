@@ -1,7 +1,7 @@
 
 # 分镜实验室 - AI影视前期制作工具
 
-![分镜实验室](https://cinemaai-vision-forge.lovable.app/)
+![分镜实验室](https://img.shields.io/badge/CinemaAI-Studio-00A67E?style=for-the-badge&logo=react)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
@@ -34,32 +34,6 @@
 - **多维度分析**: 包含图像分析、执行方案、构图设计等
 - **调色板设计**: 自动生成符合场景需求的专业调色板
 - **提示词优化**: 生成适配主流AI模型的优化提示词
-
-### 产品地图
-  
-- **用户进入 CinemaAI Studio**：
- └──「1. 故事创作」
-       ├── AI辅助创建剧本（可定制剧本类型/风格/结构）
-       └── 场景列表 & 简要摘要
-
- └──「2. 分镜板制作」
-       ├── AI生成镜头表（导演Agent + 摄像Agent 联动）
-       ├── 时间线视图 & 编辑功能
-       └── 可视缩略图生成 + 手动微调
-
- └──「3. 视觉风格设计」
-       ├── AI生成调色板 + 构图分析
-       ├── Prompt输出 + 微调 + 图像生成
-       └── 视觉包导出（PDF/ZIP）
-
- ⛩️「灵感市场」(未来可拓展)
-       └── 浏览、收藏、复用他人项目起点
-
- 📁「项目中心」
-       └── 项目列表、版本控制、协作权限、资产管理
-
-
-
 
 ## 🛠️ 技术架构
 
