@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Key, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, TestTube, Shield, Clock, Activity } from 'lucide-react';
+import { Loader2, Key, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, TestTube, Shield, Clock, Activity, UserX, AlertTriangle } from 'lucide-react';
 import { useUserApiKeys } from '@/hooks/useUserApiKeys';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
+import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import Navbar from '@/components/Navbar';
 import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { formatApiKeyForDisplay } from '@/utils/apiKeyTester';
 
 const UserSettingsPage = () => {
@@ -24,11 +25,17 @@ const UserSettingsPage = () => {
     testApiKey, 
     testExistingApiKey 
   } = useUserApiKeys();
+  const { isDeleting, deleteAccount } = useAccountDeletion();
   
   const [newApiKey, setNewApiKey] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [currentTestResult, setCurrentTestResult] = useState<any>(null);
+  
+  // 对话框状态
+  const [showUnbindDialog, setShowUnbindDialog] = useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
+  const [selectedKeyId, setSelectedKeyId] = useState<string>('');
 
   const hasDeepSeekKey = apiKeys.some(key => key.provider === 'deepseek');
   const deepSeekKey = apiKeys.find(key => key.provider === 'deepseek');
@@ -66,15 +73,29 @@ const UserSettingsPage = () => {
     setIsSaving(false);
   };
 
-  const handleDeleteApiKey = async (id: string) => {
-    if (confirm('确定要删除这个API密钥吗？删除后将无法使用AI功能。')) {
-      await deleteApiKey(id);
+  const handleUnbindApiKey = (id: string) => {
+    setSelectedKeyId(id);
+    setShowUnbindDialog(true);
+  };
+
+  const confirmUnbindApiKey = async () => {
+    if (selectedKeyId) {
+      await deleteApiKey(selectedKeyId);
       setCurrentTestResult(null);
+      setSelectedKeyId('');
     }
   };
 
   const handleTestExistingKey = async () => {
     await testExistingApiKey('deepseek');
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteAccountDialog(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    await deleteAccount();
   };
 
   // 清理测试结果当输入改变时
@@ -340,9 +361,11 @@ const UserSettingsPage = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteApiKey(key.id)}
+                            onClick={() => handleUnbindApiKey(key.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />
+                            解除绑定
                           </Button>
                         </div>
                       ))}
@@ -352,8 +375,80 @@ const UserSettingsPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Dangerous Operations Section */}
+          <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
+                <AlertTriangle className="h-5 w-5" />
+                危险操作
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="p-4 border border-red-200 rounded-lg bg-white dark:bg-red-900/10">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-red-800 dark:text-red-300">
+                        注销账号
+                      </h4>
+                      <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                        <p>• 这是永久操作，将删除所有数据和API密钥绑定</p>
+                        <p>• 删除后无法恢复任何数据</p>
+                        <p>• 注销前会自动清理所有API密钥</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting}
+                      className="ml-4"
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          注销中...
+                        </>
+                      ) : (
+                        <>
+                          <UserX className="h-4 w-4 mr-2" />
+                          注销账号
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* API Key Unbind Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showUnbindDialog}
+        onOpenChange={setShowUnbindDialog}
+        title="确认解除API密钥绑定"
+        description="确认删除此API密钥？删除后将无法使用AI功能，您需要重新配置API密钥才能继续使用相关服务。"
+        confirmText="解除绑定"
+        cancelText="取消"
+        onConfirm={confirmUnbindApiKey}
+        variant="destructive"
+      />
+
+      {/* Account Deletion Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showDeleteAccountDialog}
+        onOpenChange={setShowDeleteAccountDialog}
+        title="确认注销账号"
+        description="这是永久操作，将删除所有数据和API密钥绑定。删除后无法恢复任何数据。注销前会自动清理所有API密钥。"
+        confirmText="永久删除账号"
+        cancelText="取消"
+        onConfirm={confirmDeleteAccount}
+        variant="destructive"
+        requiresTextConfirmation={true}
+        confirmationText="DELETE"
+      />
     </div>
   );
 };
