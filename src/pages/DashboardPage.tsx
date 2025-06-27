@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -15,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
+import Navbar from '@/components/Navbar';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
@@ -150,17 +150,23 @@ const DashboardPage = () => {
 
   if (isLoadingProject) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4 text-lg">正在加载您的项目...</p>
+      <div className="min-h-screen bg-black">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="ml-4 text-lg">正在加载您的项目...</p>
+        </div>
       </div>
     );
   }
   
   if (!project) {
       return (
-        <div className="flex justify-center items-center min-h-screen">
-          <p className="text-lg text-destructive">加载项目失败。请检查网络连接并刷新页面。如果您未登录，请先登录。</p>
+        <div className="min-h-screen bg-black">
+          <Navbar />
+          <div className="flex justify-center items-center min-h-screen">
+            <p className="text-lg text-destructive">加载项目失败。请检查网络连接并刷新页面。如果您未登录，请先登录。</p>
+          </div>
         </div>
       );
   }
@@ -168,60 +174,63 @@ const DashboardPage = () => {
   const isProcessing = isLoadingScreenwriter || isLoadingDirector || isSavingShots;
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-24 min-h-screen">
-      <DashboardHeader project={project} onLogout={handleLogout} />
+    <div className="min-h-screen bg-black">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 pt-24">
+        <DashboardHeader project={project} onLogout={handleLogout} />
 
-      <ProcessingPipeline
-        plot={plot}
-        setPlot={setPlot}
-        onProcessPlot={handleProcessPlot}
-        isLoadingScreenwriter={isLoadingScreenwriter}
-        screenwriterOutput={screenwriterOutput}
-        setScreenwriterOutput={setScreenwriterOutput}
-        onDirectorProcessing={handleDirectorProcessing}
-        isLoadingDirector={isLoadingDirector}
-        directorOutput={directorOutput}
-        setDirectorOutput={setDirectorOutput}
-        onSaveShotsToDatabase={handleSaveShots}
-        isSavingShots={isSavingShots}
-        isProcessing={isProcessing}
-      />
-
-      <ProjectAssetsCard
-        assets={assets}
-        isLoading={isLoadingAssets}
-        onAddAsset={addAsset}
-        onUpdateAsset={updateAsset}
-        onDeleteAsset={deleteAsset}
-      />
-
-      <FutureAreaCard
-        savedShots={savedShots}
-        isLoadingSavedShots={isLoadingSavedShots}
-        onSelectShot={selectShot}
-        selectedShotId={selectedShot?.id}
-        onToggleArchive={toggleShotArchiveStatus}
-      />
-
-      <ArchivedShotsList
-        archivedShots={archivedShots}
-        onToggleArchive={toggleShotArchiveStatus}
-      />
-
-      {selectedShot && (
-        <SelectedShotDetails
-          selectedShot={selectedShot}
-          onGeneratePrompts={generatePromptsForSelectedShot}
-          isLoadingPrompts={isLoadingImagePrompts}
-          generatedPrompts={generatedImagePrompts}
-          onGenerateCinematographerPlan={generateCinematographerPlan}
-          isLoadingCinematographer={isLoadingCinematographer}
-          cinematographerPlan={cinematographerPlan}
-          onGenerateArtDirectorPlan={generateArtDirectorPlan}
-          isLoadingArtDirector={isLoadingArtDirector}
-          artDirectorPlan={artDirectorPlan}
+        <ProcessingPipeline
+          plot={plot}
+          setPlot={setPlot}
+          onProcessPlot={handleProcessPlot}
+          isLoadingScreenwriter={isLoadingScreenwriter}
+          screenwriterOutput={screenwriterOutput}
+          setScreenwriterOutput={setScreenwriterOutput}
+          onDirectorProcessing={handleDirectorProcessing}
+          isLoadingDirector={isLoadingDirector}
+          directorOutput={directorOutput}
+          setDirectorOutput={setDirectorOutput}
+          onSaveShotsToDatabase={handleSaveShots}
+          isSavingShots={isSavingShots}
+          isProcessing={isProcessing}
         />
-      )}
+
+        <ProjectAssetsCard
+          assets={assets}
+          isLoading={isLoadingAssets}
+          onAddAsset={addAsset}
+          onUpdateAsset={updateAsset}
+          onDeleteAsset={deleteAsset}
+        />
+
+        <FutureAreaCard
+          savedShots={savedShots}
+          isLoadingSavedShots={isLoadingSavedShots}
+          onSelectShot={selectShot}
+          selectedShotId={selectedShot?.id}
+          onToggleArchive={toggleShotArchiveStatus}
+        />
+
+        <ArchivedShotsList
+          archivedShots={archivedShots}
+          onToggleArchive={toggleShotArchiveStatus}
+        />
+
+        {selectedShot && (
+          <SelectedShotDetails
+            selectedShot={selectedShot}
+            onGeneratePrompts={generatePromptsForSelectedShot}
+            isLoadingPrompts={isLoadingImagePrompts}
+            generatedPrompts={generatedImagePrompts}
+            onGenerateCinematographerPlan={generateCinematographerPlan}
+            isLoadingCinematographer={isLoadingCinematographer}
+            cinematographerPlan={cinematographerPlan}
+            onGenerateArtDirectorPlan={generateArtDirectorPlan}
+            isLoadingArtDirector={isLoadingArtDirector}
+            artDirectorPlan={artDirectorPlan}
+          />
+        )}
+      </div>
     </div>
   );
 };
