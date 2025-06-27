@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -11,19 +10,23 @@ import { usePlotProcessing } from '@/hooks/usePlotProcessing';
 import { useDirectorProcessing } from '@/hooks/useDirectorProcessing';
 import { useShotManagement } from '@/hooks/useShotManagement';
 import { useProjectAssets } from '@/hooks/useProjectAssets';
+import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
+import LoginPromptDialog from '@/components/LoginPromptDialog';
 import Navbar from '@/components/Navbar';
 
 const DashboardPage = () => {
+  const { user, isAuthenticated } = useOptionalAuth();
   const { project, isLoadingProject, updateProject } = useProject();
   const navigate = useNavigate();
 
   const [plot, setPlot] = useState('');
   const [screenwriterOutput, setScreenwriterOutput] = useState('');
   const [directorOutput, setDirectorOutput] = useState('');
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const {
     savedShots,
@@ -76,68 +79,82 @@ const DashboardPage = () => {
     }
   }, [project, handleFetchSavedShots]);
 
-  const handleProcessPlot = async () => {
-    if (!project) return;
-    setScreenwriterOutput('');
-    setDirectorOutput('');
-    clearSelectedShotAndPrompts();
-    await updateProject({ plot, screenwriter_output: null, director_output_json: null, status: 'new' });
-    const result = await processPlotWithScreenwriter(plot);
-    if (result) {
-      setScreenwriterOutput(result);
-      await updateProject({ screenwriter_output: result, status: 'writing' });
+  const checkAuthAndProceed = (action: () => void) => {
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      return;
     }
+    action();
+  };
+
+  const handleProcessPlot = async () => {
+    checkAuthAndProceed(async () => {
+      if (!project) return;
+      setScreenwriterOutput('');
+      setDirectorOutput('');
+      clearSelectedShotAndPrompts();
+      await updateProject({ plot, screenwriter_output: null, director_output_json: null, status: 'new' });
+      const result = await processPlotWithScreenwriter(plot);
+      if (result) {
+        setScreenwriterOutput(result);
+        await updateProject({ screenwriter_output: result, status: 'writing' });
+      }
+    });
   };
 
   const handleDirectorProcessing = async () => {
-    if (!project || !screenwriterOutput) return;
-    clearSelectedShotAndPrompts();
-    setDirectorOutput('');
-    await updateProject({ screenwriter_output: screenwriterOutput, director_output_json: null });
+    checkAuthAndProceed(async () => {
+      if (!project || !screenwriterOutput) return;
+      clearSelectedShotAndPrompts();
+      setDirectorOutput('');
+      await updateProject({ screenwriter_output: screenwriterOutput, director_output_json: null });
 
-    const result = await processWithDirectorAgent(screenwriterOutput);
+      const result = await processWithDirectorAgent(screenwriterOutput);
 
-    if (result) {
-      let accumulatedOutput = result;
-      setDirectorOutput(accumulatedOutput);
+      if (result) {
+        let accumulatedOutput = result;
+        setDirectorOutput(accumulatedOutput);
 
-      try {
-        const trimmed = accumulatedOutput.trim();
-        // Basic validation to ensure it's likely a JSON array
-        if (trimmed && (!trimmed.startsWith('[') || !trimmed.endsWith(']'))) {
-           // Attempt to find JSON array within markdown ```json ... ```
-          const match = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
-          if (match && match[1]) {
-            const extractedJson = match[1].trim();
-            JSON.parse(extractedJson); // Validate extracted JSON
-            accumulatedOutput = extractedJson;
-            setDirectorOutput(accumulatedOutput); // Update UI with cleaned JSON
-          } else {
-            throw new Error("输出不是有效的JSON数组，且未在Markdown代码块中找到。");
+        try {
+          const trimmed = accumulatedOutput.trim();
+          // Basic validation to ensure it's likely a JSON array
+          if (trimmed && (!trimmed.startsWith('[') || !trimmed.endsWith(']'))) {
+             // Attempt to find JSON array within markdown ```json ... ```
+            const match = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
+            if (match && match[1]) {
+              const extractedJson = match[1].trim();
+              JSON.parse(extractedJson); // Validate extracted JSON
+              accumulatedOutput = extractedJson;
+              setDirectorOutput(accumulatedOutput); // Update UI with cleaned JSON
+            } else {
+              throw new Error("输出不是有效的JSON数组，且未在Markdown代码块中找到。");
+            }
+          } else if (trimmed) {
+             JSON.parse(trimmed); // Validate
           }
-        } else if (trimmed) {
-           JSON.parse(trimmed); // Validate
+          
+          await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
+        } catch (e: any) {
+          toast({
+            title: '警告：导演智能体输出格式不正确',
+            description: 'AI输出可能不是标准JSON格式。请检查并手动编辑后再保存。',
+            variant: "destructive",
+            duration: 9000,
+          });
+          // Still save the raw output for manual correction
+          await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
         }
-        
-        await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
-      } catch (e: any) {
-        toast({
-          title: '警告：导演智能体输出格式不正确',
-          description: 'AI输出可能不是标准JSON格式。请检查并手动编辑后再保存。',
-          variant: "destructive",
-          duration: 9000,
-        });
-        // Still save the raw output for manual correction
-        await updateProject({ director_output_json: accumulatedOutput, status: 'directing' });
       }
-    }
+    });
   };
 
   const handleSaveShots = async () => {
-    if (!project || !directorOutput) return;
-    await updateProject({ director_output_json: directorOutput }); // Save latest edits
-    await saveShotsToDatabase(directorOutput, project.id);
-    await updateProject({ status: 'completed' });
+    checkAuthAndProceed(async () => {
+      if (!project || !directorOutput) return;
+      await updateProject({ director_output_json: directorOutput }); // Save latest edits
+      await saveShotsToDatabase(directorOutput, project.id);
+      await updateProject({ status: 'completed' });
+    });
   };
 
   const handleLogout = async () => {
@@ -147,6 +164,15 @@ const DashboardPage = () => {
     } else {
         navigate('/auth');
     }
+  };
+
+  const handleContinueWithoutLogin = () => {
+    setShowLoginPrompt(false);
+    toast({
+      title: "提示",
+      description: "您可以查看界面，但需要登录才能使用AI功能和保存数据。",
+      duration: 4000,
+    });
   };
 
   if (isLoadingProject) {
@@ -233,6 +259,12 @@ const DashboardPage = () => {
             artDirectorPlan={artDirectorPlan}
           />
         )}
+
+        <LoginPromptDialog
+          open={showLoginPrompt}
+          onOpenChange={setShowLoginPrompt}
+          onContinueWithoutLogin={handleContinueWithoutLogin}
+        />
       </div>
     </div>
   );
