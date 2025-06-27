@@ -1,8 +1,9 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Camera, Palette } from 'lucide-react';
+import { Loader2, Sparkles, Camera, Palette, Beaker } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -29,11 +30,17 @@ const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
   onGenerateArtDirectorPlan,
   isLoadingArtDirector,
 }) => {
+  const navigate = useNavigate();
+
   if (!selectedShot) {
     return null; // Don't render anything if no shot is selected
   }
 
   const isAnyLoading = isLoadingPrompts || isLoadingCinematographer || isLoadingArtDirector;
+
+  const handleEnterPromptLab = () => {
+    navigate(`/shot-lab/${selectedShot.id}`);
+  };
 
   return (
     <Card className="mt-8">
@@ -54,7 +61,15 @@ const SelectedShotActionsCard: React.FC<SelectedShotActionsCardProps> = ({
             {selectedShot.director_notes && <p className="text-sm text-muted-foreground"><strong>导演注释:</strong> {selectedShot.director_notes}</p>}
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <Button
+              onClick={handleEnterPromptLab}
+              variant="default"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              <Beaker className="h-4 w-4 mr-2" />
+              进入 Prompt Lab
+            </Button>
             <Button
               onClick={onGeneratePrompts}
               disabled={isAnyLoading}

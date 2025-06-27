@@ -53,6 +53,47 @@ export type Database = {
           },
         ]
       }
+      project_consistency_prompts: {
+        Row: {
+          asset_name: string
+          asset_type: string
+          consistency_prompt: string
+          created_at: string
+          id: string
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_name: string
+          asset_type: string
+          consistency_prompt: string
+          created_at?: string
+          id?: string
+          project_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_name?: string
+          asset_type?: string
+          consistency_prompt?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_consistency_prompts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -88,6 +129,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shot_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          is_final: boolean
+          prompt_text: string
+          shot_id: string
+          updated_at: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_final?: boolean
+          prompt_text: string
+          shot_id: string
+          updated_at?: string
+          user_id: string
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_final?: boolean
+          prompt_text?: string
+          shot_id?: string
+          updated_at?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shot_prompts_shot_id_fkey"
+            columns: ["shot_id"]
+            isOneToOne: false
+            referencedRelation: "structured_shots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       structured_shots: {
         Row: {

@@ -175,6 +175,38 @@ ${selectedShot.director_notes ? `- 导演注释: ${selectedShot.director_notes}`
     const result = await callDeepSeekAPI(systemPromptImagePrompts, userPromptContent);
     if (result) {
       setGeneratedImagePrompts(result);
+      
+      // Auto-save as prompt version
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Get the highest version number for this shot
+          const { data: existingPrompts } = await supabase
+            .from('shot_prompts')
+            .select('version_number')
+            .eq('shot_id', selectedShot.id)
+            .order('version_number', { ascending: false })
+            .limit(1);
+
+          const nextVersion = existingPrompts && existingPrompts.length > 0 
+            ? existingPrompts[0].version_number + 1 
+            : 1;
+
+          await supabase
+            .from('shot_prompts')
+            .insert([{
+              shot_id: selectedShot.id,
+              user_id: user.id,
+              prompt_text: result,
+              version_number: nextVersion,
+              is_final: false,
+            }]);
+        }
+      } catch (error) {
+        console.error('Failed to save prompt version:', error);
+        // Don't show error to user as the main generation was successful
+      }
+      
       toast({ title: "提示词方案生成成功", description: "已为选中分镜生成详细视觉方案。" });
     } else {
       toast({ title: "提示词方案生成失败", description: "未能从AI获取方案。", variant: "destructive"});
