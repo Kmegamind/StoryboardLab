@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
@@ -15,7 +15,7 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
 import Navbar from '@/components/Navbar';
-import { Button, Link } from '@radix-ui/react';
+import { Button } from '@/components/ui/button';
 
 const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject();
