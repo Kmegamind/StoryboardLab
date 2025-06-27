@@ -89,7 +89,7 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-4">
                 <Button asChild variant="outline">
-                  <Link to="/create">开始创作</Link>
+                  <Link to="/dashboard">开始创作</Link>
                 </Button>
                 <Button asChild>
                   <Link to="/auth">登录</Link>
@@ -133,7 +133,7 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/create" className="text-muted-foreground hover:text-primary transition-colors">
+                  <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
                     开始创作
                   </Link>
                   <Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">
