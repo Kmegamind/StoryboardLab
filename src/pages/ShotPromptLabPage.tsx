@@ -1,18 +1,19 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Save, Plus, Trash2, Star, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useShotPromptLab } from '@/hooks/useShotPromptLab';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { callDeepSeekAPI } from '@/utils/apiUtils';
 import Navbar from '@/components/Navbar';
+import ShotDetailsCard from '@/components/shot-prompt-lab/ShotDetailsCard';
+import PromptEditor from '@/components/shot-prompt-lab/PromptEditor';
+import VersionHistory from '@/components/shot-prompt-lab/VersionHistory';
+import ConsistencyPrompts from '@/components/shot-prompt-lab/ConsistencyPrompts';
 
 type Shot = Tables<'structured_shots'>;
 
@@ -199,156 +200,29 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>分镜详情</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div><strong>景别:</strong> {shot.shot_type || 'N/A'}</div>
-              <div><strong>画面内容:</strong> {shot.scene_content}</div>
-              {shot.dialogue && shot.dialogue !== "无" && (
-                <div><strong>对白:</strong> {shot.dialogue}</div>
-              )}
-              {shot.camera_movement && (
-                <div><strong>运镜:</strong> {shot.camera_movement}</div>
-              )}
-              {shot.visual_style && (
-                <div><strong>视觉风格:</strong> {shot.visual_style}</div>
-              )}
-              {shot.director_notes && (
-                <div><strong>导演注释:</strong> {shot.director_notes}</div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>提示词编辑器</CardTitle>
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={generateVisualPrompt}
-                    disabled={isGeneratingPrompt}
-                    variant="outline"
-                  >
-                    {isGeneratingPrompt ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 mr-2" />
-                    )}
-                    生成视觉方案
-                  </Button>
-                  <Button onClick={handleSavePrompt} disabled={!currentPrompt.trim()}>
-                    <Save className="h-4 w-4 mr-2" />
-                    保存版本
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={currentPrompt}
-                onChange={(e) => setCurrentPrompt(e.target.value)}
-                placeholder="在这里编辑您的提示词，或点击生成视觉方案开始..."
-                className="min-h-[400px] font-mono text-sm"
-              />
-            </CardContent>
-          </Card>
+          <ShotDetailsCard shot={shot} />
+          <PromptEditor
+            currentPrompt={currentPrompt}
+            setCurrentPrompt={setCurrentPrompt}
+            isGeneratingPrompt={isGeneratingPrompt}
+            onGeneratePrompt={generateVisualPrompt}
+            onSavePrompt={handleSavePrompt}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>版本历史</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingVersions ? (
-                <div className="flex justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : promptVersions.length === 0 ? (
-                <p className="text-muted-foreground">暂无版本历史</p>
-              ) : (
-                <div className="space-y-3">
-                  {promptVersions.map((version) => (
-                    <div key={version.id} className="flex items-center justify-between p-3 border rounded">
-                      <div className="flex items-center gap-2">
-                        <span>版本 {version.version_number}</span>
-                        {version.is_final && <Badge variant="secondary"><Star className="h-3 w-3" /></Badge>}
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(version.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleLoadVersion(version.prompt_text)}
-                        >
-                          加载
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setFinalVersion(version.id)}
-                        >
-                          设为最终版
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deletePromptVersion(version.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>项目一致性提示词</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingConsistency ? (
-                <div className="flex justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : consistencyPrompts.length === 0 ? (
-                <p className="text-muted-foreground">暂无一致性提示词</p>
-              ) : (
-                <div className="space-y-3">
-                  {consistencyPrompts.map((prompt) => (
-                    <div key={prompt.id} className="p-3 border rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Badge>{prompt.asset_type}</Badge>
-                          <span className="font-medium">{prompt.asset_name}</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => insertConsistencyPrompt(prompt.consistency_prompt)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            插入
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {prompt.consistency_prompt}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <VersionHistory
+            promptVersions={promptVersions}
+            isLoadingVersions={isLoadingVersions}
+            onLoadVersion={handleLoadVersion}
+            onSetFinalVersion={setFinalVersion}
+            onDeleteVersion={deletePromptVersion}
+          />
+          <ConsistencyPrompts
+            consistencyPrompts={consistencyPrompts}
+            isLoadingConsistency={isLoadingConsistency}
+            onInsertPrompt={insertConsistencyPrompt}
+          />
         </div>
       </div>
     </div>
