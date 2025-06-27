@@ -15,17 +15,23 @@ export const fetchShotsWithPrompts = async (
       *,
       latest_prompt:shot_prompts!shot_prompts_shot_id_fkey(
         id,
+        shot_id,
+        user_id,
         version_number,
         prompt_text,
         is_final,
-        created_at
+        created_at,
+        updated_at
       ),
       final_prompt:shot_prompts!shot_prompts_shot_id_fkey!inner(
         id,
+        shot_id,
+        user_id,
         version_number,
         prompt_text,
         is_final,
-        created_at
+        created_at,
+        updated_at
       )
     `, { count: 'exact' })
     .eq('project_id', projectId);
@@ -76,8 +82,8 @@ export const fetchShotsWithPrompts = async (
 
     return {
       ...shot,
-      latest_prompt: latestPrompt,
-      final_prompt: finalPrompt,
+      latest_prompt: latestPrompt || undefined,
+      final_prompt: finalPrompt || undefined,
     };
   });
 
