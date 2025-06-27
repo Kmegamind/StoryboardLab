@@ -14,6 +14,7 @@ import ShotDetailsCard from '@/components/shot-prompt-lab/ShotDetailsCard';
 import PromptEditor from '@/components/shot-prompt-lab/PromptEditor';
 import VersionHistory from '@/components/shot-prompt-lab/VersionHistory';
 import ConsistencyPrompts from '@/components/shot-prompt-lab/ConsistencyPrompts';
+import PerspectiveSelector from '@/components/shot-prompt-lab/PerspectiveSelector';
 
 type Shot = Tables<'structured_shots'>;
 
@@ -25,6 +26,7 @@ const ShotPromptLabPage = () => {
   const [isLoadingShot, setIsLoadingShot] = useState(true);
   const [currentPrompt, setCurrentPrompt] = useState('');
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+  const [isCreatingPerspective, setIsCreatingPerspective] = useState(false);
 
   const {
     prompts: promptVersions,
@@ -120,7 +122,7 @@ Based on the user's provided shot details, follow this exact structure for your 
 
 Your output must be clear, well-structured, and ready for a professional production pipeline.`;
 
-    const userPromptContent = `
+    let userPromptContent = `
 请为以下分镜细节生成一份专业的视觉执行方案和对应的图像/视频提示词:
 - 镜号: ${shot.shot_number || 'N/A'}
 - 景别: ${shot.shot_type || 'N/A'}
@@ -133,6 +135,16 @@ ${shot.key_props ? `- 关键道具: ${shot.key_props}` : ''}
 ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
 
 请严格按照系统指令的结构进行输出。`;
+
+    // If this is a perspective variant, add perspective information
+    if (shot.perspective_type === 'perspective' && shot.perspective_name) {
+      userPromptContent += `
+
+特别注意：这是一个视角变体镜头，请特别强调以下视角要求：
+- 视角类型: ${shot.perspective_name}
+- 在生成的所有提示词中都要融入这个特定视角的特点
+- 确保最终的图像生成提示词能够准确体现 ${shot.perspective_name} 的视觉特征`;
+    }
 
     const result = await callDeepSeekAPI(systemPromptImagePrompts, userPromptContent);
     if (result) {
@@ -162,6 +174,67 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
   const insertConsistencyPrompt = (promptText: string) => {
     setCurrentPrompt(prev => prev + '\n\n' + promptText);
     toast({ title: "一致性提示词已插入" });
+  };
+
+  const handleCreatePerspective = async (perspectiveId: string, perspectiveName: string, promptModifier: string) => {
+    if (!shot) return;
+    
+    setIsCreatingPerspective(true);
+    try {
+      // Create perspective shot using database operation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "创建失败", description: "用户未登录", variant: "destructive" });
+        return;
+      }
+
+      const perspectiveShotNumber = `${shot.shot_number}-${perspectiveName}`;
+
+      const newPerspectiveShot = {
+        project_id: shot.project_id,
+        user_id: user.id,
+        parent_shot_id: shot.id,
+        perspective_type: 'perspective' as const,
+        perspective_name: perspectiveName,
+        shot_number: perspectiveShotNumber,
+        shot_type: shot.shot_type,
+        scene_content: shot.scene_content,
+        dialogue: shot.dialogue,
+        estimated_duration: shot.estimated_duration,
+        camera_movement: shot.camera_movement,
+        sound_music: shot.sound_music,
+        visual_style: shot.visual_style,
+        key_props: shot.key_props,
+        director_notes: `${shot.director_notes || ''}\n\n[视角变体] ${perspectiveName}: ${promptModifier}`.trim(),
+      };
+
+      const { data, error } = await supabase
+        .from('structured_shots')
+        .insert([newPerspectiveShot])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "视角变体已创建",
+        description: `已创建 ${perspectiveName} 视角变体，正在跳转...`,
+      });
+
+      // Navigate to the new perspective shot
+      setTimeout(() => {
+        navigate(`/shot-prompt-lab/${data.id}`);
+      }, 1000);
+
+    } catch (error: any) {
+      toast({
+        title: "创建视角变体失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingPerspective(false);
+    }
   };
 
   if (isLoadingShot) {
@@ -196,7 +269,14 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
             <ArrowLeft className="h-4 w-4 mr-2" />
             返回仪表板
           </Button>
-          <h1 className="text-3xl font-bold">Prompt Lab - 分镜 {shot.shot_number}</h1>
+          <h1 className="text-3xl font-bold">
+            Prompt Lab - 分镜 {shot.shot_number}
+            {shot.perspective_type === 'perspective' && (
+              <span className="text-lg text-muted-foreground ml-2">
+                ({shot.perspective_name})
+              </span>
+            )}
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -208,6 +288,12 @@ ${shot.director_notes ? `- 导演注释: ${shot.director_notes}` : ''}
             onGeneratePrompt={generateVisualPrompt}
             onSavePrompt={handleSavePrompt}
           />
+          {shot.perspective_type === 'main' && (
+            <PerspectiveSelector
+              onCreatePerspective={handleCreatePerspective}
+              isCreating={isCreatingPerspective}
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">

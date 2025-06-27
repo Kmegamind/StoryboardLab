@@ -96,6 +96,66 @@ export const useShotManagement = () => {
     }
   };
 
+  const createPerspectiveShot = async (
+    parentShot: Shot,
+    perspectiveName: string,
+    promptModifier: string
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "创建失败", description: "用户未登录", variant: "destructive" });
+        return null;
+      }
+
+      // Generate new shot number for perspective variant
+      const perspectiveShotNumber = `${parentShot.shot_number}-${perspectiveName}`;
+
+      const newPerspectiveShot = {
+        project_id: parentShot.project_id,
+        user_id: user.id,
+        parent_shot_id: parentShot.id,
+        perspective_type: 'perspective' as const,
+        perspective_name: perspectiveName,
+        shot_number: perspectiveShotNumber,
+        shot_type: parentShot.shot_type,
+        scene_content: parentShot.scene_content,
+        dialogue: parentShot.dialogue,
+        estimated_duration: parentShot.estimated_duration,
+        camera_movement: parentShot.camera_movement,
+        sound_music: parentShot.sound_music,
+        visual_style: parentShot.visual_style,
+        key_props: parentShot.key_props,
+        director_notes: `${parentShot.director_notes || ''}\n\n[视角变体] ${perspectiveName}: ${promptModifier}`.trim(),
+      };
+
+      const { data, error } = await supabase
+        .from('structured_shots')
+        .insert([newPerspectiveShot])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setSavedShots(prev => [...prev, data].sort((a, b) => (a.shot_number || "").localeCompare(b.shot_number || "")));
+      
+      toast({
+        title: "视角变体已创建",
+        description: `已创建 ${perspectiveName} 视角变体`,
+      });
+
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "创建视角变体失败",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   return {
     savedShots,
     archivedShots,
@@ -105,5 +165,6 @@ export const useShotManagement = () => {
     selectShot,
     toggleShotArchiveStatus,
     clearSelectedShotAndPrompts,
+    createPerspectiveShot,
   };
 };

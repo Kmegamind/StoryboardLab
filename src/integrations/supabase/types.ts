@@ -130,6 +130,36 @@ export type Database = {
         }
         Relationships: []
       }
+      shot_perspectives: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          perspective_name: string
+          prompt_modifier: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          perspective_name: string
+          prompt_modifier: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          perspective_name?: string
+          prompt_modifier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shot_prompts: {
         Row: {
           created_at: string
@@ -181,6 +211,9 @@ export type Database = {
           id: string
           is_archived: boolean
           key_props: string | null
+          parent_shot_id: string | null
+          perspective_name: string | null
+          perspective_type: string
           project_id: string | null
           scene_content: string
           shot_number: string | null
@@ -199,6 +232,9 @@ export type Database = {
           id?: string
           is_archived?: boolean
           key_props?: string | null
+          parent_shot_id?: string | null
+          perspective_name?: string | null
+          perspective_type?: string
           project_id?: string | null
           scene_content: string
           shot_number?: string | null
@@ -217,6 +253,9 @@ export type Database = {
           id?: string
           is_archived?: boolean
           key_props?: string | null
+          parent_shot_id?: string | null
+          perspective_name?: string | null
+          perspective_type?: string
           project_id?: string | null
           scene_content?: string
           shot_number?: string | null
@@ -232,6 +271,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "structured_shots_parent_shot_id_fkey"
+            columns: ["parent_shot_id"]
+            isOneToOne: false
+            referencedRelation: "structured_shots"
             referencedColumns: ["id"]
           },
         ]
