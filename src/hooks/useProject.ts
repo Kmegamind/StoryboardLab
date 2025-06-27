@@ -18,6 +18,18 @@ export type Project = {
 export type ProjectUpdate = Partial<Project>;
 export type ProjectInsert = Partial<Project>;
 
+// Create a temporary project for unauthenticated users
+const createTempProject = (): Project => ({
+    id: 'temp-project',
+    title: '临时项目',
+    plot: '',
+    screenwriter_output: '',
+    director_output_json: '',
+    status: 'new',
+    user_id: 'temp-user',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+});
 
 export const useProject = () => {
     const [project, setProject] = useState<Project | null>(null);
@@ -27,11 +39,12 @@ export const useProject = () => {
         setIsLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
+            
             if (!user) {
-                // If not logged in, ProtectedRoute will handle redirection.
-                // We return here without setting isLoading to false to prevent
-                // flashing an error message on the dashboard. The component
-                // will remain in a loading state until it's unmounted.
+                // For unauthenticated users, create a temporary project
+                const tempProject = createTempProject();
+                setProject(tempProject);
+                setIsLoading(false);
                 return;
             }
 
@@ -58,7 +71,9 @@ export const useProject = () => {
             }
         } catch (error: any) {
             toast({ title: '加载或创建项目时出错', description: error.message, variant: 'destructive' });
-            setProject(null);
+            // Even on error, provide a temporary project for unauthenticated users
+            const tempProject = createTempProject();
+            setProject(tempProject);
         } finally {
             setIsLoading(false);
         }
@@ -69,6 +84,14 @@ export const useProject = () => {
             toast({ title: '更新项目失败', description: '当前没有可用的项目', variant: 'destructive' });
             return null;
         }
+
+        // For temporary projects, just update the local state without saving to database
+        if (project.id === 'temp-project') {
+            const updatedProject = { ...project, ...updates, updated_at: new Date().toISOString() };
+            setProject(updatedProject);
+            return updatedProject;
+        }
+
         try {
             const { data: updatedProject, error } = await (supabase
                 .from('projects') as any) // Using 'as any' to bypass type issue

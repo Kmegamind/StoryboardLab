@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -56,13 +57,13 @@ const DashboardPage = () => {
     addAsset,
     updateAsset,
     deleteAsset,
-  } = useProjectAssets(project?.id);
+  } = useProjectAssets(isAuthenticated ? project?.id : undefined);
   
   const handleFetchSavedShots = useCallback(() => {
-      if (project) {
+      if (project && isAuthenticated) {
         fetchSavedShots(project.id);
       }
-  }, [project, fetchSavedShots]);
+  }, [project, fetchSavedShots, isAuthenticated]);
   
   const { isLoadingDirector, isSavingShots, processWithDirectorAgent, saveShotsToDatabase } = useDirectorProcessing({
     onSaveComplete: handleFetchSavedShots,
@@ -73,11 +74,11 @@ const DashboardPage = () => {
       setPlot(project.plot || '');
       setScreenwriterOutput(project.screenwriter_output || '');
       setDirectorOutput(project.director_output_json || '');
-      if(project.status === 'completed' || project.director_output_json) {
+      if((project.status === 'completed' || project.director_output_json) && isAuthenticated) {
         handleFetchSavedShots();
       }
     }
-  }, [project, handleFetchSavedShots]);
+  }, [project, handleFetchSavedShots, isAuthenticated]);
 
   const checkAuthAndProceed = (action: () => void) => {
     if (!isAuthenticated) {
@@ -193,7 +194,7 @@ const DashboardPage = () => {
         <Navbar />
         <div className="flex justify-center items-center min-h-screen">
           <div className="text-center">
-            <p className="text-lg text-muted-foreground mb-4">请先登录以访问工作台</p>
+            <p className="text-lg text-muted-foreground mb-4">项目加载失败，请刷新页面重试</p>
           </div>
         </div>
       </div>
