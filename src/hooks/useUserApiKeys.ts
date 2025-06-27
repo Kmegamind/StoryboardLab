@@ -4,7 +4,7 @@ import { useApiKeyStorage, UserApiKey } from './useApiKeyStorage';
 import { useApiKeyTesting } from './useApiKeyTesting';
 import { ApiKeyTestResult } from '@/utils/apiKeyTester';
 
-export { UserApiKey };
+export type { UserApiKey };
 
 export const useUserApiKeys = () => {
   const {
