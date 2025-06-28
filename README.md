@@ -1,14 +1,13 @@
 
 # 分镜实验室 - AI影视前期制作工具
 
-![分镜实验室](https://cinemaai-vision-forge.lovable.app/)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 ## 🎬 项目简介
 
 分镜实验室 是一个创新的AI影视前期制作平台，专为电影制作人、编剧、导演和创意工作者设计。通过先进的大型语言模型（LLM）技术，将简单的故事灵感自动转化为专业、可执行的视觉生产方案。
-（体验网址：https://cinemaai-vision-forge.lovable.app/）
+（体验网址：https://storyboardlab.lovable.app）
 
 ### 核心优势
 - **🤖 AI智能化创作**: 多Agent协作架构，实现从剧本到分镜的全流程自动化
