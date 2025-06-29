@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, PlusCircle, Edit, Trash2, Users, Camera, Box } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Users, Camera, Box, Wand2 } from 'lucide-react';
 import { ProjectAsset, ProjectAssetInsert, ProjectAssetUpdate } from '@/hooks/useProjectAssets';
+import { AssetGenerationDialog } from './AssetGenerationDialog';
+import { useAssetGeneration } from '@/hooks/useAssetGeneration';
+import { useProject } from '@/hooks/useProject';
+import { toast } from '@/hooks/use-toast';
 
 interface ProjectAssetsCardProps {
   assets: ProjectAsset[];
@@ -112,6 +115,10 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<ProjectAsset | null>(null);
+  const [isGenerationDialogOpen, setIsGenerationDialogOpen] = useState(false);
+  
+  const { project } = useProject();
+  const { extractedAssets, isGenerating, generateAssets, clearAssets } = useAssetGeneration();
 
   const handleOpenDialog = (asset: ProjectAsset | null = null) => {
     setEditingAsset(asset);
@@ -136,7 +143,64 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
     if (window.confirm('确定要删除这个资产吗？此操作不可撤销。')) {
         await onDeleteAsset(assetId);
     }
-  }
+  };
+
+  const handleGenerateAssets = async (source: 'script' | 'shots' | 'custom', customText?: string) => {
+    let content = '';
+    
+    if (source === 'script') {
+      content = project?.screenwriter_output || '';
+    } else if (source === 'shots') {
+      content = project?.director_output_json || '';
+    }
+
+    await generateAssets(source, content, customText);
+  };
+
+  const handleConfirmAssets = async (assetsToAdd: ProjectAssetInsert[]) => {
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const assetData of assetsToAdd) {
+      try {
+        await onAddAsset(assetData);
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        console.error('添加资产失败:', error);
+      }
+    }
+
+    if (successCount > 0) {
+      toast({
+        title: '资产添加完成',
+        description: `成功添加 ${successCount} 个资产${errorCount > 0 ? `，${errorCount} 个失败` : ''}`,
+      });
+    }
+
+    if (errorCount > 0 && successCount === 0) {
+      toast({
+        title: '添加失败',
+        description: '所有资产添加失败，请检查是否存在重名资产。',
+        variant: 'destructive',
+      });
+    }
+
+    clearAssets();
+  };
+
+  const handleOpenGenerationDialog = () => {
+    if (!project?.screenwriter_output && !project?.director_output_json) {
+      toast({
+        title: '无法生成资产',
+        description: '请先完成剧本创作或分镜制作，然后再使用AI资产生成功能。',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsGenerationDialogOpen(true);
+  };
 
   return (
     <>
@@ -146,9 +210,14 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
             <CardTitle className="text-2xl">项目资产库</CardTitle>
             <CardDescription>管理项目中可复用的角色、场景和道具。</CardDescription>
           </div>
-          <Button onClick={() => handleOpenDialog()}>
-            <PlusCircle className="mr-2 h-4 w-4" /> 新增资产
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleOpenGenerationDialog}>
+              <Wand2 className="mr-2 h-4 w-4" /> AI智能生成
+            </Button>
+            <Button onClick={() => handleOpenDialog()}>
+              <PlusCircle className="mr-2 h-4 w-4" /> 手动添加
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -156,9 +225,19 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : assets.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              资产库是空的。点击 "新增资产" 来添加第一个资产。
-            </p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                资产库是空的。您可以：
+              </p>
+              <div className="flex justify-center gap-4">
+                <Button variant="outline" onClick={handleOpenGenerationDialog}>
+                  <Wand2 className="mr-2 h-4 w-4" /> 使用AI智能生成
+                </Button>
+                <Button onClick={() => handleOpenDialog()}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> 手动添加资产
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               {assets.map(asset => (
@@ -185,17 +264,28 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
         </CardContent>
       </Card>
 
+      {/* 手动添加/编辑对话框 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                  <DialogTitle>{editingAsset ? '编辑资产' : '新增资产'}</DialogTitle>
+                  <DialogTitle>{editingAsset ? '编辑资产' : '手动添加资产'}</DialogTitle>
                   <DialogDescription>
-                      {editingAsset ? '修改资产的详细信息。' : '添加一个新的可复用资产到您的项目中。'}
+                      {editingAsset ? '修改资产的详细信息。' : '手动添加一个新的资产到您的项目中。'}
                   </DialogDescription>
               </DialogHeader>
               <AssetForm asset={editingAsset} onSubmit={handleSubmit} onCancel={handleCloseDialog} />
           </DialogContent>
       </Dialog>
+
+      {/* AI生成对话框 */}
+      <AssetGenerationDialog
+        open={isGenerationDialogOpen}
+        onOpenChange={setIsGenerationDialogOpen}
+        extractedAssets={extractedAssets}
+        isGenerating={isGenerating}
+        onGenerate={handleGenerateAssets}
+        onConfirmAssets={handleConfirmAssets}
+      />
     </>
   );
 };
