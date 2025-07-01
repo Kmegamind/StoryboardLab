@@ -33,6 +33,7 @@ const UserSettingsPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [currentTestResult, setCurrentTestResult] = useState<any>(null);
+  const [testedApiKey, setTestedApiKey] = useState(''); // 追踪已测试的API密钥
   
   // Dialog states
   const [showUnbindDialog, setShowUnbindDialog] = useState(false);
@@ -54,6 +55,9 @@ const UserSettingsPage = () => {
 
     const result = await testApiKey(newApiKey.trim());
     setCurrentTestResult(result);
+    if (result.success) {
+      setTestedApiKey(newApiKey.trim()); // 记录成功测试的API密钥
+    }
   };
 
   const handleSaveApiKey = async () => {
@@ -71,6 +75,7 @@ const UserSettingsPage = () => {
     if (success) {
       setNewApiKey('');
       setCurrentTestResult(null);
+      setTestedApiKey('');
     }
     setIsSaving(false);
   };
@@ -84,6 +89,7 @@ const UserSettingsPage = () => {
     if (selectedKeyId) {
       await deleteApiKey(selectedKeyId);
       setCurrentTestResult(null);
+      setTestedApiKey('');
       setSelectedKeyId('');
     }
   };
@@ -100,12 +106,13 @@ const UserSettingsPage = () => {
     await deleteAccount();
   };
 
-  // Clear test result when input changes
+  // 只在API密钥值真正变化时才清空测试结果
   useEffect(() => {
-    if (currentTestResult && newApiKey !== '') {
+    if (currentTestResult && newApiKey.trim() !== testedApiKey) {
       setCurrentTestResult(null);
+      setTestedApiKey('');
     }
-  }, [newApiKey, currentTestResult]);
+  }, [newApiKey, currentTestResult, testedApiKey]);
 
   if (!isAuthenticated) {
     return (

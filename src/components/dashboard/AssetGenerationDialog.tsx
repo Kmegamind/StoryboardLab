@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,7 @@ interface AssetGenerationDialogProps {
   isGenerating: boolean;
   onGenerate: (source: 'script' | 'shots' | 'custom', customText?: string) => Promise<void>;
   onConfirmAssets: (assets: ProjectAssetInsert[]) => Promise<void>;
+  projectId: string;
 }
 
 const AssetIcon = ({ type }: { type: string }) => {
@@ -34,6 +34,7 @@ export const AssetGenerationDialog: React.FC<AssetGenerationDialogProps> = ({
   isGenerating,
   onGenerate,
   onConfirmAssets,
+  projectId,
 }) => {
   const [selectedAssets, setSelectedAssets] = useState<{[key: string]: boolean}>({});
   const [editedAssets, setEditedAssets] = useState<{[key: string]: ExtractedAsset}>({});
@@ -73,6 +74,7 @@ export const AssetGenerationDialog: React.FC<AssetGenerationDialogProps> = ({
         if (selectedAssets[key]) {
           const assetData = getAssetData('character', index, asset);
           assetsToAdd.push({
+            project_id: projectId,
             asset_type: 'character',
             asset_name: assetData.name,
             description: assetData.description,
@@ -87,6 +89,7 @@ export const AssetGenerationDialog: React.FC<AssetGenerationDialogProps> = ({
         if (selectedAssets[key]) {
           const assetData = getAssetData('scene', index, asset);
           assetsToAdd.push({
+            project_id: projectId,
             asset_type: 'scene',
             asset_name: assetData.name,
             description: assetData.description,
@@ -101,6 +104,7 @@ export const AssetGenerationDialog: React.FC<AssetGenerationDialogProps> = ({
         if (selectedAssets[key]) {
           const assetData = getAssetData('prop', index, asset);
           assetsToAdd.push({
+            project_id: projectId,
             asset_type: 'prop',
             asset_name: assetData.name,
             description: assetData.description,

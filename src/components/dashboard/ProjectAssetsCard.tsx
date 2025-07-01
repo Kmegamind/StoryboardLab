@@ -285,6 +285,7 @@ export const ProjectAssetsCard: React.FC<ProjectAssetsCardProps> = ({
         isGenerating={isGenerating}
         onGenerate={handleGenerateAssets}
         onConfirmAssets={handleConfirmAssets}
+        projectId={project?.id || ''}
       />
     </>
   );
