@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Project } from '@/hooks/useProject';
+import { ProjectTemplate } from '@/types/projectTemplate';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -38,7 +39,7 @@ export const useProjects = () => {
     }
   }, []);
 
-  const createProject = useCallback(async (title: string): Promise<Project | null> => {
+  const createProject = useCallback(async (title: string, template?: ProjectTemplate): Promise<Project | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -51,26 +52,69 @@ export const useProjects = () => {
         return null;
       }
 
+      // 准备项目数据
+      const projectData = {
+        title,
+        user_id: user.id,
+        status: 'new',
+        plot: template?.plot || null,
+        screenwriter_output: template?.screenwriter_output || null,
+      };
+
       const { data, error } = await supabase
         .from('projects')
-        .insert([
-          {
-            title,
-            user_id: user.id,
-            status: 'new',
-          }
-        ])
+        .insert([projectData])
         .select()
         .single();
 
       if (error) throw error;
 
       const newProject = data as Project;
+      
+      // 如果模板包含资产，创建项目资产
+      if (template?.assets && template.assets.length > 0) {
+        const assetsData = template.assets.map(asset => ({
+          project_id: newProject.id,
+          asset_type: asset.asset_type,
+          asset_name: asset.asset_name,
+          description: asset.description,
+        }));
+
+        const { error: assetsError } = await supabase
+          .from('project_assets')
+          .insert(assetsData);
+
+        if (assetsError) {
+          console.error('Error creating project assets:', assetsError);
+        }
+      }
+
+      // 如果模板包含分镜，创建分镜数据
+      if (template?.shots && template.shots.length > 0) {
+        const shotsData = template.shots.map(shot => ({
+          project_id: newProject.id,
+          user_id: user.id,
+          shot_number: shot.shot_number,
+          scene_content: shot.scene_content,
+          shot_type: shot.shot_type,
+          camera_movement: shot.camera_movement,
+          estimated_duration: shot.estimated_duration,
+        }));
+
+        const { error: shotsError } = await supabase
+          .from('structured_shots')
+          .insert(shotsData);
+
+        if (shotsError) {
+          console.error('Error creating project shots:', shotsError);
+        }
+      }
+
       setProjects(prev => [newProject, ...prev]);
       
       toast({
         title: '项目创建成功',
-        description: `项目 "${title}" 已创建`,
+        description: `项目 "${title}" 已创建${template && template.id !== 'blank' ? `（使用${template.name}模板）` : ''}`,
       });
 
       return newProject;

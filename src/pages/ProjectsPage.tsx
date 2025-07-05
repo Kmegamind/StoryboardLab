@@ -12,6 +12,8 @@ import { Plus, Loader2, FolderOpen } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import ProjectTemplateSelector from '@/components/project/ProjectTemplateSelector';
+import { ProjectTemplate, PROJECT_TEMPLATES } from '@/types/projectTemplate';
 
 const ProjectsPage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const ProjectsPage = () => {
   
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(PROJECT_TEMPLATES[0]);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateProject = async () => {
@@ -32,12 +35,22 @@ const ProjectsPage = () => {
       return;
     }
 
+    if (!selectedTemplate) {
+      toast({
+        title: '请选择项目模板',
+        description: '请选择一个项目模板来创建项目',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsCreating(true);
     try {
-      const project = await createProject(newProjectTitle.trim());
+      const project = await createProject(newProjectTitle.trim(), selectedTemplate);
       if (project) {
         setShowCreateDialog(false);
         setNewProjectTitle('');
+        setSelectedTemplate(PROJECT_TEMPLATES[0]);
         navigate(`/project/${project.id}`);
       }
     } finally {
@@ -105,14 +118,19 @@ const ProjectsPage = () => {
                   新建项目
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-4xl">
                 <DialogHeader>
                   <DialogTitle>创建新项目</DialogTitle>
                   <DialogDescription>
-                    为您的创意项目起一个名字
+                    选择模板并为您的创意项目起一个名字
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  <ProjectTemplateSelector
+                    selectedTemplate={selectedTemplate}
+                    onTemplateSelect={setSelectedTemplate}
+                  />
+                  
                   <div>
                     <Label htmlFor="project-title">项目名称</Label>
                     <Input
