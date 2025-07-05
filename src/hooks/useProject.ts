@@ -31,7 +31,7 @@ const createTempProject = (): Project => ({
     updated_at: new Date().toISOString(),
 });
 
-export const useProject = () => {
+export const useProject = (projectId?: string) => {
     const [project, setProject] = useState<Project | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -48,6 +48,29 @@ export const useProject = () => {
                 return;
             }
 
+            // If projectId is provided, fetch specific project
+            if (projectId && projectId !== 'temp-project') {
+                const { data: specificProject, error } = await (supabase
+                    .from('projects') as any)
+                    .select('*')
+                    .eq('id', projectId)
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') { // No rows returned
+                        toast({ title: '项目不存在', description: '指定的项目不存在或您没有访问权限', variant: 'destructive' });
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    setProject(specificProject);
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            // Fallback: get latest project or create new one
             const { data: projects, error } = await (supabase
                 .from('projects') as any) // Using 'as any' to bypass type issue
                 .select('*')
@@ -77,7 +100,7 @@ export const useProject = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [projectId]);
 
     const updateProject = useCallback(async (updates: Partial<ProjectUpdate>) => {
         if (!project) {

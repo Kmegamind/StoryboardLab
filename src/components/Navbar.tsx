@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Film, Menu, X, User, LogOut, Settings, Wrench } from 'lucide-react';
+import { Film, Menu, X, User, LogOut, Settings, Wrench, FolderOpen } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -46,7 +46,10 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Button asChild variant="outline">
-                  <Link to="/dashboard">工作台</Link>
+                  <Link to="/projects">
+                    <FolderOpen className="mr-2 h-4 w-4" />
+                    我的项目
+                  </Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -98,8 +101,8 @@ const Navbar = () => {
             <div className="flex flex-col space-y-4">
               {user ? (
                 <>
-                  <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
-                    工作台
+                  <Link to="/projects" className="text-muted-foreground hover:text-primary transition-colors">
+                    我的项目
                   </Link>
                   <Link to="/settings" className="text-muted-foreground hover:text-primary transition-colors">
                     设置

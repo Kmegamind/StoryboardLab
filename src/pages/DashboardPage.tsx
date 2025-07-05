@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
 import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
@@ -19,8 +19,9 @@ import LoginPromptDialog from '@/components/LoginPromptDialog';
 import Navbar from '@/components/Navbar';
 
 const DashboardPage = () => {
+  const { id: projectId } = useParams();
   const { user, isAuthenticated } = useOptionalAuth();
-  const { project, isLoadingProject, updateProject } = useProject();
+  const { project, isLoadingProject, updateProject } = useProject(projectId);
   const navigate = useNavigate();
 
   const [plot, setPlot] = useState('');

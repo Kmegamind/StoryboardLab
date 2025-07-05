@@ -24,7 +24,7 @@ const Hero = () => {
         </p>
         <div className="flex justify-center items-center">
           <Button size="lg" asChild>
-            <Link to="/dashboard">开始创作</Link>
+            <Link to="/projects">开始创作</Link>
           </Button>
         </div>
       </div>
