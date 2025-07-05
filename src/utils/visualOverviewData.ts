@@ -41,7 +41,17 @@ export const fetchShotsWithPrompts = async (
     }
 
     // Apply sorting
-    query = query.order(sorting.field, { ascending: sorting.direction === 'asc' });
+    if (sorting.field === 'shot_number') {
+      // Use natural sorting for shot numbers (convert text to numeric for proper sorting)
+      const orderDirection = sorting.direction === 'asc' ? 'asc' : 'desc';
+      query = query.order(`CASE 
+        WHEN shot_number ~ '^[0-9]+$' THEN shot_number::integer 
+        ELSE 999999 
+      END`, { ascending: sorting.direction === 'asc' })
+      .order('shot_number', { ascending: sorting.direction === 'asc' });
+    } else {
+      query = query.order(sorting.field, { ascending: sorting.direction === 'asc' });
+    }
 
     // Apply pagination
     const from = (page - 1) * pageSize;
