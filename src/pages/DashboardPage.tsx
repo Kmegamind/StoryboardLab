@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
-import { ProjectAssetsCard } from '@/components/dashboard/ProjectAssetsCard';
-import FutureAreaCard from '@/components/dashboard/FutureAreaCard';
-import ArchivedShotsList from '@/components/dashboard/ArchivedShotsList';
 import { Loader2 } from 'lucide-react';
 import { useProject } from '@/hooks/useProject';
 import { usePlotProcessing } from '@/hooks/usePlotProcessing';
@@ -12,11 +9,14 @@ import { useShotManagement } from '@/hooks/useShotManagement';
 import { useProjectAssets } from '@/hooks/useProjectAssets';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { supabase } from '@/integrations/supabase/client';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import ProcessingPipeline from '@/components/dashboard/ProcessingPipeline';
 import SelectedShotDetails from '@/components/dashboard/SelectedShotDetails';
 import LoginPromptDialog from '@/components/LoginPromptDialog';
 import Navbar from '@/components/Navbar';
+import ProjectNavigation from '@/components/project/ProjectNavigation';
+import PlotProcessingModule from '@/components/project/PlotProcessingModule';
+import AIPipelineModule from '@/components/project/AIPipelineModule';
+import ShotsManagementModule from '@/components/project/ShotsManagementModule';
+import AssetsManagementModule from '@/components/project/AssetsManagementModule';
 
 const DashboardPage = () => {
   const { id: projectId } = useParams();
@@ -24,6 +24,8 @@ const DashboardPage = () => {
   const { project, isLoadingProject, updateProject } = useProject(projectId);
   const navigate = useNavigate();
 
+  // 模块化状态
+  const [activeTab, setActiveTab] = useState('plot');
   const [plot, setPlot] = useState('');
   const [screenwriterOutput, setScreenwriterOutput] = useState('');
   const [directorOutput, setDirectorOutput] = useState('');
@@ -60,11 +62,22 @@ const DashboardPage = () => {
     onSaveComplete: handleFetchSavedShots,
   });
 
+  // 根据项目状态自动切换到合适的标签
   useEffect(() => {
     if (project) {
       setPlot(project.plot || '');
       setScreenwriterOutput(project.screenwriter_output || '');
       setDirectorOutput(project.director_output_json || '');
+      
+      // 自动切换到合适的标签
+      if (project.status === 'completed' || project.director_output_json) {
+        setActiveTab('shots');
+      } else if (project.status === 'directing' || project.screenwriter_output) {
+        setActiveTab('pipeline');
+      } else {
+        setActiveTab('plot');
+      }
+      
       if((project.status === 'completed' || project.director_output_json) && isAuthenticated) {
         handleFetchSavedShots();
       }
@@ -194,51 +207,77 @@ const DashboardPage = () => {
 
   const isProcessing = isLoadingScreenwriter || isLoadingDirector || isSavingShots;
 
+  // 渲染当前活跃的模块
+  const renderActiveModule = () => {
+    switch (activeTab) {
+      case 'plot':
+        return (
+          <PlotProcessingModule
+            plot={plot}
+            setPlot={setPlot}
+            onProcessPlot={handleProcessPlot}
+            isLoadingScreenwriter={isLoadingScreenwriter}
+            screenwriterOutput={screenwriterOutput}
+            setScreenwriterOutput={setScreenwriterOutput}
+            isProcessing={isProcessing}
+          />
+        );
+      case 'pipeline':
+        return (
+          <AIPipelineModule
+            screenwriterOutput={screenwriterOutput}
+            directorOutput={directorOutput}
+            setDirectorOutput={setDirectorOutput}
+            onDirectorProcessing={handleDirectorProcessing}
+            onSaveShotsToDatabase={handleSaveShots}
+            isLoadingDirector={isLoadingDirector}
+            isSavingShots={isSavingShots}
+            isProcessing={isProcessing}
+          />
+        );
+      case 'shots':
+        return (
+          <ShotsManagementModule
+            savedShots={savedShots}
+            archivedShots={archivedShots}
+            isLoadingSavedShots={isLoadingSavedShots}
+            selectedShot={selectedShot}
+            onSelectShot={selectShot}
+            onToggleArchive={toggleShotArchiveStatus}
+            projectId={project?.id || ''}
+          />
+        );
+      case 'assets':
+        return (
+          <AssetsManagementModule
+            assets={assets}
+            isLoading={isLoadingAssets}
+            onAddAsset={addAsset}
+            onUpdateAsset={updateAsset}
+            onDeleteAsset={deleteAsset}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black">
       <Navbar />
       <div className="container mx-auto px-4 py-8 pt-24">
-        <DashboardHeader project={project} onLogout={() => {}} />
-
-        <ProcessingPipeline
-          plot={plot}
-          setPlot={setPlot}
-          onProcessPlot={handleProcessPlot}
-          isLoadingScreenwriter={isLoadingScreenwriter}
-          screenwriterOutput={screenwriterOutput}
-          setScreenwriterOutput={setScreenwriterOutput}
-          onDirectorProcessing={handleDirectorProcessing}
-          isLoadingDirector={isLoadingDirector}
-          directorOutput={directorOutput}
-          setDirectorOutput={setDirectorOutput}
-          onSaveShotsToDatabase={handleSaveShots}
-          isSavingShots={isSavingShots}
-          isProcessing={isProcessing}
+        <ProjectNavigation
+          project={project}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
 
-        <ProjectAssetsCard
-          assets={assets}
-          isLoading={isLoadingAssets}
-          onAddAsset={addAsset}
-          onUpdateAsset={updateAsset}
-          onDeleteAsset={deleteAsset}
-        />
-
-        <FutureAreaCard
-          savedShots={savedShots}
-          isLoadingSavedShots={isLoadingSavedShots}
-          onSelectShot={selectShot}
-          selectedShotId={selectedShot?.id}
-          onToggleArchive={toggleShotArchiveStatus}
-        />
-
-        <ArchivedShotsList
-          archivedShots={archivedShots}
-          onToggleArchive={toggleShotArchiveStatus}
-        />
+        {renderActiveModule()}
 
         {selectedShot && (
-          <SelectedShotDetails selectedShot={selectedShot} />
+          <div className="mt-8">
+            <SelectedShotDetails selectedShot={selectedShot} />
+          </div>
         )}
 
         <LoginPromptDialog
